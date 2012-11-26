@@ -1,0 +1,65 @@
+kood(1) -- sample help page
+===========================
+
+## SYNOPSIS
+
+`kood` [<format>...] <file>...<br>
+`kood` `-m`|`--man` <file>...<br>
+`kood` `-S`|`--server` <file>...<br>
+`kood` `--pipe` <file><br>
+`kood` &lt; <file>
+
+## DESCRIPTION
+
+**Kood** is a CLI for taskboards with a minimal self-hosted web interface.
+
+## FILES
+
+Sed posuere consectetur est at lobortis. Fusce dapibus, tellus ac cursus commodo,
+tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Curabitur
+blandit tempus porttitor. Duis mollis, est non commodo luctus, nisi erat porttitor
+ligula, eget lacinia odio sem nec elit. Cum sociis natoque penatibus et magnis dis
+parturient montes, nascetur ridiculus mus. Praesent commodo cursus magna, vel
+scelerisque nisl consectetur et. Curabitur blandit tempus porttitor.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ullamcorper nulla
+non metus auctor fringilla. Aenean eu leo quam. Pellentesque ornare sem lacinia
+quam venenatis vestibulum. Curabitur blandit tempus porttitor.
+
+## OPTIONS
+
+These options control things.
+
+  * `-s`, `--sample`:
+    Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum.
+    Maecenas faucibus mollis interdum. Curabitur blandit tempus porttitor.
+
+  * `-L`, `--lorem`:
+    Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.
+    Cras mattis consectetur purus sit amet fermentum.
+
+  * `--pipe`:
+    Don't generate files, write generated output to standard output. This is the
+    default behavior when ronn source text is piped in on standard input and no
+    <file> arguments are provided.
+
+Miscellaneous options:
+
+  * `-e`, `--example`:
+    Porta risus etiam consectetur vestibulum.
+
+## EXAMPLES
+
+Vestibulum id ligula porta felis euismod semper:
+
+    $ kood --clone my-board new-board
+    $ kood --c my-board new-board
+    $ kood --assigned user@server status
+
+## BUGS
+
+**Kood** is a work in progress.
+
+## SEE ALSO
+
+kood-board(1), kood-status(1)

@@ -1,0 +1,74 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "KOOD" "1" "November 2012" "" ""
+.
+.SH "NAME"
+\fBkood\fR \- sample help page
+.
+.SH "SYNOPSIS"
+\fBkood\fR [\fIformat\fR\.\.\.] \fIfile\fR\.\.\.
+.
+.br
+\fBkood\fR \fB\-m\fR|\fB\-\-man\fR \fIfile\fR\.\.\.
+.
+.br
+\fBkood\fR \fB\-S\fR|\fB\-\-server\fR \fIfile\fR\.\.\.
+.
+.br
+\fBkood\fR \fB\-\-pipe\fR \fIfile\fR
+.
+.br
+\fBkood\fR < \fIfile\fR
+.
+.SH "DESCRIPTION"
+\fBKood\fR is a CLI for taskboards with a minimal self\-hosted web interface\.
+.
+.SH "FILES"
+Sed posuere consectetur est at lobortis\. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus\. Curabitur blandit tempus porttitor\. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit\. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus\. Praesent commodo cursus magna, vel scelerisque nisl consectetur et\. Curabitur blandit tempus porttitor\.
+.
+.P
+Lorem ipsum dolor sit amet, consectetur adipiscing elit\. Donec ullamcorper nulla non metus auctor fringilla\. Aenean eu leo quam\. Pellentesque ornare sem lacinia quam venenatis vestibulum\. Curabitur blandit tempus porttitor\.
+.
+.SH "OPTIONS"
+These options control things\.
+.
+.TP
+\fB\-s\fR, \fB\-\-sample\fR
+Aenean eu leo quam\. Pellentesque ornare sem lacinia quam venenatis vestibulum\. Maecenas faucibus mollis interdum\. Curabitur blandit tempus porttitor\.
+.
+.TP
+\fB\-L\fR, \fB\-\-lorem\fR
+Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor\. Cras mattis consectetur purus sit amet fermentum\.
+.
+.TP
+\fB\-\-pipe\fR
+Don\'t generate files, write generated output to standard output\. This is the default behavior when ronn source text is piped in on standard input and no \fIfile\fR arguments are provided\.
+.
+.P
+Miscellaneous options:
+.
+.TP
+\fB\-e\fR, \fB\-\-example\fR
+Porta risus etiam consectetur vestibulum\.
+.
+.SH "EXAMPLES"
+Vestibulum id ligula porta felis euismod semper:
+.
+.IP "" 4
+.
+.nf
+
+$ kood \-\-clone my\-board new\-board
+$ kood \-\-c my\-board new\-board
+$ kood \-\-assigned user@server status
+.
+.fi
+.
+.IP "" 0
+.
+.SH "BUGS"
+\fBKood\fR is a work in progress\.
+.
+.SH "SEE ALSO"
+kood\-board(1), kood\-status(1)
