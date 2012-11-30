@@ -15,7 +15,8 @@ spec = Gem::Specification.new do |s|
   s.bindir = 'bin'
   s.executables << 'kood'
 
-  s.add_development_dependency('ronn')
-  s.add_runtime_dependency('thor', '0.16.0')
-  s.add_runtime_dependency('toystore', '0.10.4')
+  s.add_development_dependency "ronn"
+  s.add_development_dependency "rake"
+  s.add_runtime_dependency "thor", "0.16.0"
+  s.add_runtime_dependency "toystore", "0.10.4"
 end
