@@ -22,47 +22,51 @@ class Kood::CLI < Thor
   #       arg = foo() if arg.nil?
   #     end
 
-  desc "board [OPTIONS] [<BOARD-SLUG>]", "Display and manage boards"
+  desc "board [OPTIONS] [<BOARD-ID>]", "Display and manage boards"
   #
-  # Delete a board. If <board-slug> is present, the specified board will be deleted.
+  # Delete a board. If <board-id> is present, the specified board will be deleted.
   # With no arguments, the currently checked out board will be deleted.
   method_option :delete, :aliases => '-d', :type => :boolean
   #
-  # Clone a board. <board-slug> will be cloned to <new-board-slug>.
-  # <board-slug> is kept intact and a new one is created with the exact same data.
+  # Clone a board. <board-id> will be cloned to <new-board-id>.
+  # <board-id> is kept intact and a new one is created with the exact same data.
   method_option :clone, :aliases => '-c', :type => :string
-  def board(board_slug = nil)
+  def board(board_id = nil)
     # If no arguments and options are specified, the command displays all existing boards
-    if board_slug.nil? and options.empty?
-      error "No boards were found." if Kood.boards.empty?
-      puts Kood.boards.map { |b| (Kood.current_board == b.slug ? "* " : "  ") + b.slug }
-      return
-    end
+    if board_id.nil? and options.empty?
+      error "No boards were found." unless Kood::Board.any?
+      puts Kood::Board.all.map { |b| (b.is_current? ? "* " : "  ") + b.id }
 
-    board_slug = Kood.current_board if board_slug.nil?
+    # If the <board-id> argument is present without options, a new board will be created
+    elsif options.empty?
+      board = Kood::Board.create(id: board_id)
+      if Kood::Board.all.size == 1
+        board.checkout
+        ok "Board created and checked out."
+      else
+        ok "Board created."
+      end
 
-    # If the <board-slug> argument is present without options, a new board will be created
-    if options.empty?
-      Kood.create_board(board_slug)
-      ok "Board created."
-      return
-    end
+    else
+      board = board_id.nil? ? Kood::Board.current! : Kood::Board.get!(board_id)
 
-    if options.key? 'clone'
-      # TODO
-    end # The cloned board may be deleted now, if the :delete option is present
+      if options.key? 'clone'
+        # TODO
+      end # The cloned board may be deleted now, if the :delete option is present
 
-    if options.key? 'delete'
-      # TODO
+      if options.key? 'delete'
+        board.delete
+        ok "Board deleted."
+      end
     end
   rescue
     error $!
   end
   map 'boards' => 'board'
 
-  desc "checkout <BOARD-SLUG>", "Checkout a different board"
-  def checkout(board_slug)
-    Kood.checkout(board_slug)
+  desc "checkout <BOARD-ID>", "Checkout a different board"
+  def checkout(board_id)
+    # TODO Kood::Board.checkout(board_id)
   rescue
     error $!
   end
