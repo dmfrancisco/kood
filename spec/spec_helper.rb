@@ -4,7 +4,7 @@ require 'kood'
 module Kood
   # Prevent memoization in order to run the command suite multiple times
   def clean_repo
-    @repo = nil
+    @_repo = nil
   end
 end
 

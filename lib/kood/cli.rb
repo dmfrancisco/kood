@@ -46,7 +46,6 @@ class Kood::CLI < Thor
       else
         ok "Board created."
       end
-
     else
       board = board_id.nil? ? Kood::Board.current! : Kood::Board.get!(board_id)
 
@@ -64,9 +63,10 @@ class Kood::CLI < Thor
   end
   map 'boards' => 'board'
 
-  desc "checkout <BOARD-ID>", "Checkout a different board"
+  desc "checkout <BOARD-ID>", "Checkout a board"
   def checkout(board_id)
-    # TODO Kood::Board.checkout(board_id)
+    Kood::Board.get!(board_id).checkout
+    ok "Board checked out."
   rescue
     error $!
   end

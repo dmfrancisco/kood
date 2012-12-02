@@ -6,7 +6,7 @@ module Kood
     adapter :git, Kood.repo, branch: 'boards'
 
     # Attributes
-    attribute :repo_path, String
+    # attribute :custom_root, String # TODO Board data (lists and cards) can be stored in external repos
 
     def self.all
       # Toystore does not provide a method to list objects
@@ -20,13 +20,12 @@ module Kood
 
     # Get the currently checked out board
     def self.current
-      get(`cd #{ Kood.repo_root } && git rev-parse --abbrev-ref HEAD`.chomp)
+      get(Kood.current_branch)
     end
 
     def self.current!
       board = Board.current
-      raise "No board has been checked out yet." if board.nil?
-      board
+      board.nil? ? raise("No board has been checked out yet.") : board
     end
 
     def self.new(attrs)
@@ -42,15 +41,13 @@ module Kood
     end
 
     def delete
-      Dir.chdir(Kood.repo_root) do
-        `git checkout master -q` if is_current?
-        `git branch -D #{ id }`
-      end
+      `cd #{ Kood.root } && git checkout master -q` if is_current?
+      `cd #{ Kood.root } && git branch -D #{ id }`
       super
     end
 
     def checkout
-      `cd #{ Kood.repo_root } && git checkout #{ id } -q`
+      `cd #{ Kood.root } && git checkout #{ id } -q`
     end
 
     def is_current?
