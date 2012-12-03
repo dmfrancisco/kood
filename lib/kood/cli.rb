@@ -32,15 +32,17 @@ class Kood::CLI < Thor
   # <board-id> is kept intact and a new one is created with the exact same data.
   method_option :clone, :aliases => '-c', :type => :string
   def board(board_id = nil)
+    user = Kood::User.current
+
     # If no arguments and options are specified, the command displays all existing boards
     if board_id.nil? and options.empty?
-      error "No boards were found." unless Kood::Board.any?
-      puts Kood::Board.all.map { |b| (b.is_current? ? "* " : "  ") + b.id }
+      error "No boards were found." if user.boards.empty?
+      puts user.boards.map { |b| (b.is_current? ? "* " : "  ") + b.id }
 
     # If the <board-id> argument is present without options, a new board will be created
     elsif options.empty?
-      board = Kood::Board.create(id: board_id)
-      if Kood::Board.all.size == 1
+      board = user.boards.create(id: board_id)
+      if user.boards.size == 1
         board.checkout
         ok "Board created and checked out."
       else
@@ -54,7 +56,7 @@ class Kood::CLI < Thor
       end # The cloned board may be deleted now, if the :delete option is present
 
       if options.key? 'delete'
-        board.delete
+        user.boards.destroy(board.id)
         ok "Board deleted."
       end
     end

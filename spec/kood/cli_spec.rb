@@ -1,9 +1,10 @@
 require 'spec_helper'
 
 describe Kood::CLI do
-  before do
+  after do
     %w{ refs/heads HEAD }.each { |f| Kood.repo.git.fs_delete(f) } # Delete all branches
     Kood.clean_repo # Force kood to create the master branch again
+    Kood::User.clean_user
   end
 
   describe "Boards" do
@@ -20,7 +21,7 @@ describe Kood::CLI do
     end
     it "displays a list on `boards`" do
       kood('board foo', 'board bar')
-      kood('boards').must_include "bar\n* foo"
+      kood('boards').must_include "foo\n  bar"
     end
     it "deletes on `board foo --delete`" do
       kood('board foo')
@@ -36,7 +37,7 @@ describe Kood::CLI do
     it "checks out board on `board checkout`" do
       kood('board foo', 'board bar')
       kood('checkout bar').must_include "Board checked out"
-      kood('boards').must_include "* bar\n  foo"
+      kood('boards').must_include "  foo\n* bar"
     end
   end
 end

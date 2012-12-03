@@ -8,6 +8,12 @@ module Kood
   end
 end
 
+class Kood::User
+  def self.clean_user
+    @_user = nil
+  end
+end
+
 # Shortand to execute thor commands and capture its output
 def kood(*cmds)
   return capture_io { Kood::CLI.start cmds.first.split }.join if cmds.size == 1

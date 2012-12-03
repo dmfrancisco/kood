@@ -2,21 +2,12 @@ module Kood
   class Board
     include Toy::Store
 
-    # The 'boards' branch tracks which branches are boards and where their data is stored
-    adapter :git, Kood.repo, branch: 'boards'
+    # Instead of saving all boards in one repo/branch, each one can live in is own repo
+    adapter :git, Kood.repo, branch: Kood.current_branch
 
     # Attributes
-    # attribute :custom_root, String # TODO Board data (lists and cards) can be stored in external repos
+    # attribute :custom_root, String # TODO Store data (lists & cards) in external repos
 
-    def self.all
-      # Toystore does not provide a method to list objects
-      branches = Kood.repo.branches # For now, this assumes board ids == branch names
-      branches.map { |b| get(b.name) unless ['master', 'boards'].include? b.name }.compact
-    end
-
-    def self.any?
-      not all.empty?
-    end
 
     # Get the currently checked out board
     def self.current
@@ -30,11 +21,16 @@ module Kood
 
     def self.new(attrs)
       raise "A board with this ID already exists." unless get(attrs[:id]).nil?
-      Adapter[:git].new(Kood.repo, branch: attrs[:id]).write('kood', '')
+      adapter :git, Kood.repo, branch: attrs[:id] # The new board is saved in a new branch
       super
     end
 
-    def self.get!(attrs)
+    def self.get(id)
+      adapter :git, Kood.repo, branch: id
+      super
+    end
+
+    def self.get!(id)
       super
     rescue
       raise "The specified board does not exist."
@@ -43,7 +39,7 @@ module Kood
     def delete
       `cd #{ Kood.root } && git checkout master -q` if is_current?
       `cd #{ Kood.root } && git branch -D #{ id }`
-      super
+      # Since we delete the branch, the default behavior is not necessary
     end
 
     def checkout
