@@ -3,6 +3,7 @@ Bundler.require
 require 'kood/core.rb'
 require 'kood/version.rb'
 require 'kood/card.rb'
+require 'kood/list.rb'
 require 'kood/board.rb'
 require 'kood/user.rb'
 require 'kood/cli.rb'

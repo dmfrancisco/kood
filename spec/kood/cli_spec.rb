@@ -40,4 +40,37 @@ describe Kood::CLI do
       kood('boards').must_include "  foo\n* bar"
     end
   end
+
+  describe "Lists" do
+    before do
+      kood('board foo')
+    end
+
+    it "displays an error if any lists exist" do
+      kood('lists').must_match "No lists were found"
+    end
+    it "creates on `list bar`" do
+      kood('list bar').must_match "List created"
+      kood('lists').must_include "bar"
+    end
+    it "forces unique IDs in one board" do
+      kood('list bar')
+      kood('list bar').must_match "A list with this ID already exists"
+    end
+    it "does not force unique IDs between boards" do
+      kood('list bar', 'board test', 'checkout test')
+      kood('list bar').must_match "List created"
+    end
+    it "displays a list on `lists`" do
+      kood('list hello', 'list world')
+      kood('lists').must_include "hello\nworld"
+    end
+    it "deletes on `list bar --delete`" do
+      kood('list bar')
+      kood('list bar -d').must_include "List deleted"
+    end
+    it "displays an error deleting an inexistent list" do
+      kood('list bar -d').must_include "The specified list does not exist"
+    end
+  end
 end

@@ -8,6 +8,21 @@ module Kood
     # Attributes
     # attribute :custom_root, String # TODO Store data (lists & cards) in external repos
 
+    # Associations
+    list :lists, Kood::List
+
+    # Observers
+    before_create :is_unique_id?
+    before_create { |b| Board.update_adapter(b.id) }
+
+    def self.get(id)
+      update_adapter(id)
+      super
+    end
+
+    def self.get!(id)
+      super rescue raise "The specified board does not exist."
+    end
 
     # Get the currently checked out board
     def self.current
@@ -15,39 +30,34 @@ module Kood
     end
 
     def self.current!
-      board = Board.current
-      board.nil? ? raise("No board has been checked out yet.") : board
+      current or raise("No board has been checked out yet.")
     end
 
-    def self.new(attrs)
-      raise "A board with this ID already exists." unless get(attrs[:id]).nil?
-      adapter :git, Kood.repo, branch: attrs[:id] # The new board is saved in a new branch
-      super
-    end
-
-    def self.get(id)
-      adapter :git, Kood.repo, branch: id
-      super
-    end
-
-    def self.get!(id)
-      super
-    rescue
-      raise "The specified board does not exist."
+    def is_current?
+      Board.current.eql? self
     end
 
     def delete
-      `cd #{ Kood.root } && git checkout master -q` if is_current?
+      `cd #{ Kood.root } && git reset --hard && git checkout master -q` if is_current?
       `cd #{ Kood.root } && git branch -D #{ id }`
       # Since we delete the branch, the default behavior is not necessary
     end
 
     def checkout
+      branch_is_board = Kood::User.current.boards.any? { |b| b.id == Kood.current_branch }
+      `cd #{ Kood.root } && git reset --hard` if branch_is_board
       `cd #{ Kood.root } && git checkout #{ id } -q`
     end
 
-    def is_current?
-      Board.current.eql? self
+    private
+
+    def is_unique_id?
+      raise "A board with this ID already exists." unless Board.get(id).nil?
+    end
+
+    def self.update_adapter(id)
+      adapter :git, Kood.repo, branch: id # The new board is saved in a new branch
+      Kood::List.adapter :git, Kood.repo, branch: id
     end
   end
 end

@@ -83,18 +83,65 @@ class Kood::CLI < Thor
     error $!
   end
 
+  desc "list [OPTIONS] [<LIST-ID>]", "Display and manage lists"
+  #
+  # Delete a list. If <list-id> is present, the specified list will be deleted.
+  method_option :delete, :aliases => '-d', :type => :boolean
+  #
+  # Clone a list. <list-id> will be cloned to <new-list-id>.
+  # <list-id> is kept intact and a new one is created with the exact same data.
+  method_option :clone, :aliases => '-c', :type => :string
+  #
+  # Move a list to another board. <list-id> will be moved to <board-id>.
+  method_option :move, :aliases => '-m', :type => :string
+  def list(list_id = nil)
+    current_board = Kood::Board.current!
+
+    # If no arguments and options are specified, the command displays all existing lists
+    if list_id.nil? and options.empty?
+      error "No lists were found." if current_board.lists.empty?
+      puts current_board.lists.map { |l| l.id }
+
+    # If the <list-id> argument is present without options, a new list will be created
+    elsif options.empty?
+      current_board.lists.create(id: list_id)
+      ok "List created."
+
+    else
+      list = Kood::List.get!(list_id)
+
+      if options.key? 'clone'
+        # TODO
+      end # The cloned list may be deleted or moved now
+
+      if options.key? 'move'
+        # TODO
+        # If the list was moved, it cannot be deleted
+
+      elsif options.key? 'delete'
+        current_board.lists.destroy(list.id)
+        ok "List deleted."
+      end
+    end
+  rescue
+    error $!
+  end
+  map 'lists' => 'list'
+
   # Invoked with `kood --help`, `kood help`, `kood help <cmd>` and `kood --help <cmd>`
   def help(cli = nil)
     case cli
       when nil then command = "kood"
       when "boards" then command = "kood-board"
+      when "lists" then command = "kood-list"
       else command = "kood-#{cli}"
     end
 
     manpages = %w(
       kood-board
       kood-checkout
-      kood-status)
+      kood-status
+      kood-list)
 
     if manpages.include? command # Present a man page for the command
       root = File.expand_path("../../../man", __FILE__)
