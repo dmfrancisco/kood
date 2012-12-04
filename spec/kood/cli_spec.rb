@@ -3,8 +3,8 @@ require 'spec_helper'
 describe Kood::CLI do
   after do
     %w{ refs/heads HEAD }.each { |f| Kood.repo.git.fs_delete(f) } # Delete all branches
-    Kood.clean_repo # Force kood to create the master branch again
-    Kood::User.clean_user
+    Kood.clear_repo # Force kood to create the master branch again
+    Kood::Config.clear_instance
   end
 
   describe "Boards" do
@@ -38,6 +38,10 @@ describe Kood::CLI do
       kood('board foo', 'board bar')
       kood('checkout bar').must_include "Board checked out"
       kood('boards').must_include "  foo\n* bar"
+    end
+    it "creates an external board on `board foo --repo`" do # TODO Add more tests
+      kood('board foo -r /Users/dmfranc/.kood/example-git/').must_match "Board created"
+      kood('boards').must_include "foo"
     end
   end
 

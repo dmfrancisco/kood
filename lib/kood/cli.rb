@@ -31,18 +31,20 @@ class Kood::CLI < Thor
   # Clone a board. <board-id> will be cloned to <new-board-id>.
   # <board-id> is kept intact and a new one is created with the exact same data.
   method_option :clone, :aliases => '-c', :type => :string
+  #
+  # Create a board in an external repository.
+  method_option :repo, :aliases => '-r', :type => :string
   def board(board_id = nil)
-    user = Kood::User.current
-
     # If no arguments and options are specified, the command displays all existing boards
     if board_id.nil? and options.empty?
-      error "No boards were found." if user.boards.empty?
-      puts user.boards.map { |b| (b.is_current? ? "* " : "  ") + b.id }
+      error "No boards were found." if Kood.config.boards.empty?
+      puts Kood.config.boards.map { |b| (b.is_current? ? "* " : "  ") + b.id }
 
     # If the <board-id> argument is present without options, a new board will be created
-    elsif options.empty?
-      board = user.boards.create(id: board_id)
-      if user.boards.size == 1
+    elsif options.empty? or options.key? 'repo'
+      board = Kood.config.boards.create(id: board_id, custom_repo: options['repo'])
+
+      if Kood.config.boards.size == 1
         board.checkout
         ok "Board created and checked out."
       else
@@ -56,7 +58,7 @@ class Kood::CLI < Thor
       end # The cloned board may be deleted now, if the :delete option is present
 
       if options.key? 'delete'
-        user.boards.destroy(board.id)
+        Kood.config.boards.destroy(board.id)
         ok "Board deleted."
       end
     end

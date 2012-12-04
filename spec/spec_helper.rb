@@ -3,14 +3,14 @@ require 'kood'
 
 module Kood
   # Prevent memoization in order to run the command suite multiple times
-  def clean_repo
-    @_repo = nil
+  def clear_repo
+    @repo = {}
   end
 end
 
-class Kood::User
-  def self.clean_user
-    @_user = nil
+class Kood::Config
+  def self.clear_instance
+    @@instance = nil
   end
 end
 

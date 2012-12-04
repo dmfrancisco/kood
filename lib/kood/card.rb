@@ -2,8 +2,6 @@ module Kood
   class Card
     include Toy::Store
 
-    # adapter :git, Kood.repo(Board.current.repo_path), branch: Board.current, path: 'cards'
-
     # Attributes
     attribute :title,       String
     attribute :description, String

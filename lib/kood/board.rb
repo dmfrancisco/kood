@@ -2,21 +2,22 @@ module Kood
   class Board
     include Toy::Store
 
-    # Instead of saving all boards in one repo/branch, each one can live in is own repo
-    adapter :git, Kood.repo, branch: Kood.current_branch
-
-    # Attributes
-    # attribute :custom_root, String # TODO Store data (lists & cards) in external repos
-
     # Associations
     list :lists, Kood::List
 
+    # Attributes
+    attribute :custom_repo, String, virtual: true
+
     # Observers
-    before_create :is_unique_id?
-    before_create { |b| Board.update_adapter(b.id) }
+    before_create do |board|
+      raise "A board with this ID already exists." unless Board.get(board.id).nil?
+      Kood.config.custom_repos[board.id] = custom_repo
+      Kood.config.save! # Support external branches
+      Board.adapter! board.id # To create a board we need to change the checked out branch
+    end
 
     def self.get(id)
-      update_adapter(id)
+      adapter! id
       super
     end
 
@@ -24,13 +25,12 @@ module Kood
       super rescue raise "The specified board does not exist."
     end
 
-    # Get the currently checked out board
     def self.current
-      get(Kood.current_branch)
+      get Kood.config.current_board_id
     end
 
     def self.current!
-      current or raise("No board has been checked out yet.")
+      current or raise "No board has been checked out yet."
     end
 
     def is_current?
@@ -38,26 +38,34 @@ module Kood
     end
 
     def delete
-      `cd #{ Kood.root } && git reset --hard && git checkout master -q` if is_current?
-      `cd #{ Kood.root } && git branch -D #{ id }`
-      # Since we delete the branch, the default behavior is not necessary
+      if is_current?
+        `cd #{ root } && git reset --hard && git checkout master -q`
+        Kood.config.current_board_id = nil
+        Kood.config.save!
+      end
+      `cd #{ root } && git branch -D #{ id }`
+      # Since we deleted the branch, the default behavior is not necessary
     end
 
     def checkout
-      branch_is_board = Kood::User.current.boards.any? { |b| b.id == Kood.current_branch }
-      `cd #{ Kood.root } && git reset --hard` if branch_is_board
-      `cd #{ Kood.root } && git checkout #{ id } -q`
+      Kood.config.current_board_id = id
+      Kood.config.save!
     end
 
     private
 
-    def is_unique_id?
-      raise "A board with this ID already exists." unless Board.get(id).nil?
+    def self.adapter!(board_id)
+      board_root = root(board_id)
+      adapter :git, Kood.repo(board_root), branch: board_id
+      Kood::List.adapter! board_id, board_root
     end
 
-    def self.update_adapter(id)
-      adapter :git, Kood.repo, branch: id # The new board is saved in a new branch
-      Kood::List.adapter :git, Kood.repo, branch: id
+    def root
+      Board.root(id)
+    end
+
+    def self.root(board_id)
+      Kood.config.custom_repos[board_id] or Kood.root
     end
   end
 end
