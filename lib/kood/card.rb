@@ -12,14 +12,11 @@ module Kood
       super rescue raise "The specified card does not exist."
     end
 
-    def self.get_by_title!(title, options)
-      # Only search for a card in the given board
-      raise("The specified card does not exist.") unless options.key? :board
-
+    def self.get_by_title!(title, options = {})
       cards = if options.key? :list # Search in a given list
         options[:list].cards
       else # Search in all lists
-        options[:board].lists.inject([]) { |cards, list| cards += list.cards }
+        Board.current!.lists.inject([]) { |cards, list| cards += list.cards }
       end
 
       # Get list of partial matches, if the :exact option is set to false
@@ -30,9 +27,27 @@ module Kood
       results || raise("The specified card does not exist.")
     end
 
+    def self.get_by_id_or_title!(id_or_title, options = {})
+      card = Kood::Card.get(id_or_title)
+      card ||= Kood::Card.get_by_title!(id_or_title, options)
+    end
+
     def self.adapter!(branch, root)
       adapter :git, Kood.repo(root), branch: branch, path: 'cards'
     end
+
+    def edit_file(board)
+      Dir.chdir(board.root) do
+        board.checkout(permanent: true)
+
+        yield filepath if block_given?
+
+        data = File.read(File.join(board.root, filepath))
+        self.attributes = Card.adapter.decode(data)
+      end
+    end
+
+    private
 
     def filepath
       File.join('cards', id)

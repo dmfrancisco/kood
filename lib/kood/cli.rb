@@ -155,15 +155,13 @@ class Kood::CLI < Thor
     # If the <card-title> argument is present without options, the card with the given
     # ID or title is displayed
     elsif card_id_or_title and options.empty?
-      card = Kood::Card.get(card_id) # Try to get card by ID
-      card ||= Kood::Card.get_by_title!(card_title, board: current_board)
+      card = Kood::Card.get_by_id_or_title!(card_id_or_title)
       puts "Title: #{ card.title }"
 
     # If the <card-title> argument is present without options despite the list, a new
     # card will be created
     elsif card_title and options.key? 'list'
       list = Kood::List.get! options['list']
-
       list.cards.create(title: card_title)
       ok "Card created."
 
@@ -199,31 +197,21 @@ class Kood::CLI < Thor
 
   desc "edit [<CARD-ID|CARD-TITLE>]", "Launches the configured editor to modify the card"
   def edit(card_id_or_title = nil)
-    card_title = card_id = card_id_or_title
     current_board = Kood::Board.current!
-    card = Kood::Card.get(card_id) # Try to get card by ID
-    card ||= Kood::Card.get_by_title!(card_title, board: current_board)
+    card = Kood::Card.get_by_id_or_title!(card_id_or_title)
 
     editor = ENV['KOOD_EDITOR'] || ENV['EDITOR']
 
     if editor
-      # card.edit(current_board) do |filepath|
-      #   `#{ editor } #{ card.filepath }`
-      # end
+      card.edit_file(current_board) do |filepath|
+        `#{ editor } #{ filepath }`
+      end
 
-      current_board.checkout(permanent: true)
-
-      Dir.chdir(current_board.root) do
-        `#{ editor } #{ card.filepath }`
-        data = File.read(File.join(current_board.root, card.filepath))
-        card.attributes = Kood::Board.adapter.decode(data)
-
-        if card.changes.empty?
-          error "The editor exited without changes. Run `kood update` to persist changes."
-        else
-          card.save!
-          ok "Card updated."
-        end
+      if card.changes.empty?
+        error "The editor exited without changes. Run `kood update` to persist changes."
+      else
+        card.save!
+        ok "Card updated."
       end
     else
       error "To edit a card set $EDITOR or $BUNDLER_EDITOR"
@@ -233,12 +221,8 @@ class Kood::CLI < Thor
   desc "update [<CARD-ID|CARD-TITLE>]", "Persists changes made to cards", hide: true
   def update(card_id_or_title = nil)
     current_board = Kood::Board.current!
-    card = Kood::Card.get(card_id_or_title) # Try to get card by ID
-    card ||= Kood::Card.get_by_title!(card_id_or_title, board: current_board)
-
-    current_board.checkout(permanent: true)
-    data = File.read(File.join(current_board.root, card.filepath))
-    card.attributes = Kood::Board.adapter.decode(data)
+    card = Kood::Card.get_by_id_or_title!(card_id_or_title)
+    card.edit_file(current_board)
 
     if card.changes.empty?
       error "No changes to persist."
