@@ -12,8 +12,9 @@ module Kood
       super rescue raise "The specified list does not exist."
     end
 
-    def self.adapter!(board_id, root)
-      adapter :git, Kood.repo(root), branch: board_id, path: 'lists'
+    def self.adapter!(branch, root)
+      adapter :git, Kood.repo(root), branch: branch, path: 'lists'
+      Card.adapter! branch, root
     end
 
     private

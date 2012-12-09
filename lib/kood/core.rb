@@ -2,7 +2,7 @@ module Kood
   extend self
 
   # Path to where data, such as user configurations and boards, is stored
-  PROJECT_ROOT = Pathname(File.expand_path("~/.kood")) # TODO Replace with user conf
+  KOOD_ROOT = Pathname(File.expand_path("~/.kood")) # TODO Replace with user conf
 
   def test?
     ENV['RACK_ENV'] == 'test'
@@ -10,10 +10,7 @@ module Kood
 
   # Default path to the repository where boards are stored
   def root
-    @root ||= begin
-      proj_root = Kood::PROJECT_ROOT
-      test? ? proj_root.join('storage-test').to_s : proj_root.join('storage').to_s
-    end
+    @root ||= test? ? KOOD_ROOT.join('storage-test').to_s : KOOD_ROOT.join('storage').to_s
   end
 
   # Init a repo (and create master branch since some git commands rely on its existence)
@@ -21,8 +18,13 @@ module Kood
     @repo ||= {}
     @repo[path] ||= begin
       new_repo = Grit::Repo.init(path)
-      master = new_repo.branches.any? { |b| b.name == 'master' } # Check if master exists
-      Dir.chdir(path) { `touch k && git add k && git commit -m init` } unless master
+
+      unless new_repo.branches.any? { |b| b.name == 'master' } # Check if master exists
+        Dir.chdir(path) do
+          FileUtils.touch('k')
+          `git add k && git commit -m init`
+        end
+      end
       new_repo # If this has been done before, the above command will do nothing
     end
   end

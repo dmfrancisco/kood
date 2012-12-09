@@ -39,7 +39,7 @@ describe Kood::CLI do
       kood('checkout bar').must_include "Board checked out"
       kood('boards').must_include "  foo\n* bar"
     end
-    it "creates an external board on `board foo --repo`" do # TODO Add more tests
+    it "creates an external board on `board foo --repo`" do
       kood('board foo -r /Users/dmfranc/.kood/example-git/').must_match "Board created"
       kood('boards').must_include "foo"
     end
@@ -75,6 +75,40 @@ describe Kood::CLI do
     end
     it "displays an error deleting an inexistent list" do
       kood('list bar -d').must_include "The specified list does not exist"
+    end
+  end
+
+  describe "Cards" do
+    before do
+      kood('board foo', 'board bar', 'list hello', 'list world')
+    end
+
+    it "displays an error if any cards exist" do
+      kood('cards').must_match "= hello\n  (no cards)\n= world\n  (no cards)\n"
+    end
+    it "creates on `card 'Sample card' -l hello`" do
+      kood('card "Sample card" --list hello').must_match "Card created"
+      kood('cards').must_include "Sample card"
+    end
+    it "deletes on `card 'Sample card' --delete`" do
+      kood('card "Sample card" -l hello')
+      kood('card "Sample card" -d').must_include "Card deleted"
+    end
+    it "displays an error deleting an inexistent card" do
+      kood('card none -d').must_include "The specified card does not exist"
+    end
+    it "displays an error showing an inexistent card" do
+      kood('card "Sample card"').must_include "The specified card does not exist"
+    end
+    it "displays information on `card 'Sample card'`" do
+      kood('card "Sample card" --list hello')
+      kood('card "Sample card"').must_include "Title: Sample card"
+    end
+    it "displays information given partial title`" do
+      kood('card fo --list hello', 'card foo -l hello')
+      kood('card fo').must_include "Title: fo"
+      kood('card foo').must_include "Title: foo"
+      kood('card f').must_include "Title: fo"
     end
   end
 end

@@ -50,6 +50,7 @@ class Kood::CLI < Thor
       else
         ok "Board created."
       end
+
     else
       board = board_id.nil? ? Kood::Board.current! : Kood::Board.get!(board_id)
 
@@ -75,16 +76,6 @@ class Kood::CLI < Thor
     error $!
   end
 
-  desc "status", "Show the status of the currently checked out board"
-  #
-  # Show status information of the checked out board associated with the given user.
-  method_option :assigned, :aliases => '-a', :type => :string
-  def status
-    # TODO
-  rescue
-    error $!
-  end
-
   desc "list [OPTIONS] [<LIST-ID>]", "Display and manage lists"
   #
   # Delete a list. If <list-id> is present, the specified list will be deleted.
@@ -102,7 +93,7 @@ class Kood::CLI < Thor
     # If no arguments and options are specified, the command displays all existing lists
     if list_id.nil? and options.empty?
       error "No lists were found." if current_board.lists.empty?
-      puts current_board.lists.map { |l| l.id }
+      puts current_board.list_ids
 
     # If the <list-id> argument is present without options, a new list will be created
     elsif options.empty?
@@ -130,20 +121,150 @@ class Kood::CLI < Thor
   end
   map 'lists' => 'list'
 
+  desc "card [OPTIONS] [<CARD-ID|CARD-TITLE>]", "Display and manage cards"
+  #
+  # Delete a card. If <card-title> is present, the specified card will be deleted.
+  method_option :delete, :aliases => '-d', :type => :boolean
+  #
+  # Show status information of the checked out board associated with the given user.
+  method_option :assigned, :aliases => '-a', :type => :string
+  #
+  # Does the card action in the given list.
+  method_option :list, :aliases => '-l', :type => :string
+  #
+  # Launches the configured editor to modify the card
+  method_option :edit, :aliases => '-e', :type => :boolean
+  def card(card_id_or_title = nil)
+    card_title = card_id = card_id_or_title
+    current_board = Kood::Board.current!
+
+    # If no arguments and options are specified, the command displays all existing cards
+    if card_title.nil? and options.empty?
+      output = ""
+      current_board.lists.each do |list|
+        output += "= #{ list.id }\n"
+        if list.cards.empty?
+          output += "  (no cards)\n"
+        else
+          list.cards.each { |card| output += "  #{ card.title } (#{ card.id })\n" }
+        end
+      end
+      error "No cards were found." if output.empty?
+      puts output
+
+    # If the <card-title> argument is present without options, the card with the given
+    # ID or title is displayed
+    elsif card_id_or_title and options.empty?
+      card = Kood::Card.get(card_id) # Try to get card by ID
+      card ||= Kood::Card.get_by_title!(card_title, board: current_board)
+      puts "Title: #{ card.title }"
+
+    # If the <card-title> argument is present without options despite the list, a new
+    # card will be created
+    elsif card_title and options.key? 'list'
+      list = Kood::List.get! options['list']
+
+      list.cards.create(title: card_title)
+      ok "Card created."
+
+    else
+      if options.key? 'clone'
+        # TODO
+      end # The cloned card may be deleted or moved now
+
+      if options.key? 'move'
+        # TODO
+        # If the card was moved, it cannot be deleted
+
+      elsif options.key? 'delete'
+        current_board.lists.each do |list|
+          cards = list.cards.select { |c| c.id == card_id || c.title == card_title }
+          if cards.size == 1 # If only 1 result, since there may be cards with same title
+            card = cards.first
+            list.cards.destroy(card.id)
+            ok "Card deleted."
+            return
+          end
+        end
+        error "The specified card does not exist."
+
+      elsif options.key? 'edit'
+        edit(card_id_or_title) # Execute the `edit` task
+      end
+    end
+  rescue
+    error $!
+  end
+  map 'cards' => 'card'
+
+  desc "edit [<CARD-ID|CARD-TITLE>]", "Launches the configured editor to modify the card"
+  def edit(card_id_or_title = nil)
+    card_title = card_id = card_id_or_title
+    current_board = Kood::Board.current!
+    card = Kood::Card.get(card_id) # Try to get card by ID
+    card ||= Kood::Card.get_by_title!(card_title, board: current_board)
+
+    editor = ENV['KOOD_EDITOR'] || ENV['EDITOR']
+
+    if editor
+      # card.edit(current_board) do |filepath|
+      #   `#{ editor } #{ card.filepath }`
+      # end
+
+      current_board.checkout(permanent: true)
+
+      Dir.chdir(current_board.root) do
+        `#{ editor } #{ card.filepath }`
+        data = File.read(File.join(current_board.root, card.filepath))
+        card.attributes = Kood::Board.adapter.decode(data)
+
+        if card.changes.empty?
+          error "The editor exited without changes. Run `kood update` to persist changes."
+        else
+          card.save!
+          ok "Card updated."
+        end
+      end
+    else
+      error "To edit a card set $EDITOR or $BUNDLER_EDITOR"
+    end
+  end
+
+  desc "update [<CARD-ID|CARD-TITLE>]", "Persists changes made to cards", hide: true
+  def update(card_id_or_title = nil)
+    current_board = Kood::Board.current!
+    card = Kood::Card.get(card_id_or_title) # Try to get card by ID
+    card ||= Kood::Card.get_by_title!(card_id_or_title, board: current_board)
+
+    current_board.checkout(permanent: true)
+    data = File.read(File.join(current_board.root, card.filepath))
+    card.attributes = Kood::Board.adapter.decode(data)
+
+    if card.changes.empty?
+      error "No changes to persist."
+    else
+      card.save!
+      ok "Card updated."
+    end
+  rescue
+    error $!
+  end
+
   # Invoked with `kood --help`, `kood help`, `kood help <cmd>` and `kood --help <cmd>`
   def help(cli = nil)
     case cli
       when nil then command = "kood"
       when "boards" then command = "kood-board"
       when "lists" then command = "kood-list"
+      when "cards" then command = "kood-card"
       else command = "kood-#{cli}"
     end
 
     manpages = %w(
       kood-board
       kood-checkout
-      kood-status
-      kood-list)
+      kood-list
+      kood-card)
 
     if manpages.include? command # Present a man page for the command
       root = File.expand_path("../../../man", __FILE__)

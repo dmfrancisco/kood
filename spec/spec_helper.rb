@@ -16,11 +16,11 @@ end
 
 # Shortand to execute thor commands and capture its output
 def kood(*cmds)
-  return capture_io { Kood::CLI.start cmds.first.split }.join if cmds.size == 1
+  return capture_io { Kood::CLI.start cmds.first.shellsplit }.join if cmds.size == 1
 
   stdout, stderr = [], []
   cmds.each do |cmd|
-    out, err = capture_io { Kood::CLI.start cmd.split }
+    out, err = capture_io { Kood::CLI.start cmd.shellsplit }
     stdout << out; stderr << err
   end
   return stdout, stderr
