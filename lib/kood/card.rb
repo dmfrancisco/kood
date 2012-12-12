@@ -38,12 +38,18 @@ module Kood
 
     def edit_file(board)
       Dir.chdir(board.root) do
-        board.checkout(permanent: true)
+        current_branch = `git rev-parse --abbrev-ref HEAD`.chomp
+        `git checkout #{ board.id } -q`
 
         yield filepath if block_given?
 
         data = File.read(File.join(board.root, filepath))
         self.attributes = Card.adapter.decode(data)
+        changed = !changes.empty?
+        save! if changed
+
+        `git reset --hard && git checkout #{ current_branch } -q`
+        return changed
       end
     end
 

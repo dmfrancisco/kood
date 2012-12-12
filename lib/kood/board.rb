@@ -49,10 +49,9 @@ module Kood
       # Since we deleted the branch, the default behavior is not necessary
     end
 
-    def checkout(options = {})
+    def checkout
       Kood.config.current_board_id = id
       Kood.config.save! unless Kood.config.changes.empty?
-      `cd #{ root } && git checkout #{ id } -q ` if options[:permanent]
     end
 
     def self.adapter!(board_id)

@@ -1,4 +1,5 @@
 require "thor"
+require_relative "cli/table"
 
 class Kood::CLI < Thor
   namespace :kood
@@ -150,7 +151,8 @@ class Kood::CLI < Thor
         end
       end
       error "No cards were found." if output.empty?
-      puts output
+
+      print_board(current_board)
 
     # If the <card-title> argument is present without options, the card with the given
     # ID or title is displayed
@@ -203,15 +205,14 @@ class Kood::CLI < Thor
     editor = ENV['KOOD_EDITOR'] || ENV['EDITOR']
 
     if editor
-      card.edit_file(current_board) do |filepath|
+      changed = card.edit_file(current_board) do |filepath|
         `#{ editor } #{ filepath }`
       end
 
-      if card.changes.empty?
-        error "The editor exited without changes. Run `kood update` to persist changes."
-      else
-        card.save!
+      if changed
         ok "Card updated."
+      else
+        error "The editor exited without changes. Run `kood update` to persist changes."
       end
     else
       error "To edit a card set $EDITOR or $BUNDLER_EDITOR"
@@ -222,13 +223,12 @@ class Kood::CLI < Thor
   def update(card_id_or_title = nil)
     current_board = Kood::Board.current!
     card = Kood::Card.get_by_id_or_title!(card_id_or_title)
-    card.edit_file(current_board)
+    changed = card.edit_file(current_board)
 
-    if card.changes.empty?
-      error "No changes to persist."
-    else
-      card.save!
+    if changed
       ok "Card updated."
+    else
+      error "No changes to persist."
     end
   rescue
     error $!
@@ -265,6 +265,32 @@ class Kood::CLI < Thor
   end
 
   private
+
+  def print_board(board)
+    num_lists = board.list_ids.size
+    title  = Kood::Table.new(1)
+    header = Kood::Table.new(num_lists)
+    body   = Kood::Table.new(num_lists)
+
+    title.new_column.add_row(board.id, align: 'center')
+
+    board.lists.each do |list|
+      header.new_column.add_row(list.id, align: 'center')
+
+      column = body.new_column
+      list.cards.each do |card|
+        column.add_row(card.id.slice(0, 7), separator: false, color: 'black')
+        column.add_row(card.title)
+      end
+    end
+
+    puts title.to_s(vertical_separator: false)
+    puts header.separator('first')
+    puts header
+    puts body.separator('middle')
+    puts body
+    puts body.separator('last')
+  end
 
   def ok(text)
     # This idea comes from `git.io/logbook`, which is awesome. You should check it out.
