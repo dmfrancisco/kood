@@ -141,17 +141,7 @@ class Kood::CLI < Thor
 
     # If no arguments and options are specified, the command displays all existing cards
     if card_title.nil? and options.empty?
-      output = ""
-      current_board.lists.each do |list|
-        output += "= #{ list.id }\n"
-        if list.cards.empty?
-          output += "  (no cards)\n"
-        else
-          list.cards.each { |card| output += "  #{ card.title } (#{ card.id })\n" }
-        end
-      end
-      error "No cards were found." if output.empty?
-
+      return error "No lists were found." if current_board.lists.empty?
       print_board(current_board)
 
     # If the <card-title> argument is present without options, the card with the given

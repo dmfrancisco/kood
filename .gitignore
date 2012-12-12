@@ -39,5 +39,7 @@ publish
 # Build script local files
 build/buildinfo.properties
 build/config/buildinfo.properties
+
+# Ruby specifics
 .rvmrc
 Gemfile.lock

@@ -83,9 +83,6 @@ describe Kood::CLI do
       kood('board foo', 'board bar', 'list hello', 'list world')
     end
 
-    it "displays an error if any cards exist" do
-      kood('cards').must_match "= hello\n  (no cards)\n= world\n  (no cards)\n"
-    end
     it "creates on `card 'Sample card' -l hello`" do
       kood('card "Sample card" --list hello').must_match "Card created"
       kood('cards').must_include "Sample card"
@@ -109,6 +106,12 @@ describe Kood::CLI do
       kood('card fo').must_include "Title: fo"
       kood('card foo').must_include "Title: foo"
       kood('card f').must_include "Title: fo"
+    end
+    it "displays an empty board if any cards exist" do
+      res = kood('cards')
+      res.must_include "foo"   # Board title
+      res.must_include "hello" # One of the lists
+      res.wont_include "bar"   # The other board
     end
   end
 end

@@ -54,6 +54,7 @@ module Kood
 
     def to_s(options = { separator: true })
       max_num_rows = @columns.max_by { |col| col.rows.length }.rows.length
+      max_num_rows = 1 if max_num_rows == 0 # There aren't any rows in this table yet
       vertical_bar = options[:separator] ? self.vertical_bar : " "
       output = ""
 
