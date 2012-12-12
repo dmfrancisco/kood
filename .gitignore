@@ -39,3 +39,5 @@ publish
 # Build script local files
 build/buildinfo.properties
 build/config/buildinfo.properties
+.rvmrc
+Gemfile.lock
