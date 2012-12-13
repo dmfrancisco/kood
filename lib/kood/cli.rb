@@ -254,6 +254,15 @@ class Kood::CLI < Thor
     puts "kood version #{ Kood::VERSION }"
   end
 
+  # Reimplement the `start` method in order to catch raised exceptions
+  # For example, when running `kood c` Thor will raise "Ambiguous task c matches ..."
+  # FIXME Should not be necessary, since Thor catches exceptions when not in debug mode
+  def self.start(given_args=ARGV, config={})
+    super
+  rescue
+    puts "\e[31m#{ $! }\e[0m"
+  end
+
   private
 
   def print_board(board)
