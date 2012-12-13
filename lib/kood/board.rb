@@ -49,6 +49,10 @@ module Kood
       # Since we deleted the branch, the default behavior is not necessary
     end
 
+    def cards
+      lists.inject([]) { |cards, list| cards += list.cards }
+    end
+
     def checkout
       Kood.config.current_board_id = id
       Kood.config.save! unless Kood.config.changes.empty?

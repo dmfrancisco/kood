@@ -99,13 +99,13 @@ describe Kood::CLI do
     end
     it "displays information on `card 'Sample card'`" do
       kood('card "Sample card" --list hello')
-      kood('card "Sample card"').must_include "Title: Sample card"
+      kood('card "Sample card"').must_include "\u2503 Sample card"
     end
     it "displays information given partial title`" do
       kood('card fo --list hello', 'card foo -l hello')
-      kood('card fo').must_include "Title: fo"
-      kood('card foo').must_include "Title: foo"
-      kood('card f').must_include "Title: fo"
+      kood('card fo').must_include  "\u2503 fo"
+      kood('card foo').must_include "\u2503 foo"
+      kood('card f').must_include   "\u2503 fo"
     end
     it "displays an empty board if any cards exist" do
       res = kood('cards')

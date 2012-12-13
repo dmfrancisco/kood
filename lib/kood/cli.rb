@@ -148,7 +148,7 @@ class Kood::CLI < Thor
     # ID or title is displayed
     elsif card_id_or_title and options.empty?
       card = Kood::Card.get_by_id_or_title!(card_id_or_title)
-      puts "Title: #{ card.title }"
+      print_card(current_board, card)
 
     # If the <card-title> argument is present without options despite the list, a new
     # card will be created
@@ -258,28 +258,39 @@ class Kood::CLI < Thor
 
   def print_board(board)
     num_lists = board.list_ids.size
-    title  = Kood::Table.new(1)
     header = Kood::Table.new(num_lists)
     body   = Kood::Table.new(num_lists)
-
-    title.new_column.add_row(board.id, align: 'center')
 
     board.lists.each do |list|
       header.new_column.add_row(list.id, align: 'center')
 
       column = body.new_column
       list.cards.each do |card|
-        column.add_row(card.id.slice(0, 7), separator: false, color: 'black')
-        column.add_row(card.title)
+        column.add_row(card.title, separator: false)
+        column.add_row(card.id.slice(0, 8), color: 'black')
       end
     end
 
+    title = Kood::Table.new(1, body.width)
+    title.new_column.add_row(board.id, align: 'center')
+
     puts title.to_s(vertical_separator: false)
-    puts header.separator('first')
-    puts header
-    puts body.separator('middle')
-    puts body
-    puts body.separator('last')
+    puts header.separator('first'), header
+    puts body.separator('middle'), body, body.separator('last')
+  end
+
+  def print_card(board, card)
+    # The board's table may not use all terminal's horizontal space. In order to keep
+    # things visually similar / aligned, the card table should have the same width.
+    width = Kood::Table.new(board.list_ids.size).width
+
+    table = Kood::Table.new(1, width)
+    col = table.new_column
+    col.add_row(card.title, separator: !card.content.empty?)
+    col.add_row(card.content) if card.content
+    col.add_row("#{ card.id } (created at #{ card.created_at })", color: 'black')
+
+    puts table.separator('first'), table, table.separator('last')
   end
 
   def ok(text)

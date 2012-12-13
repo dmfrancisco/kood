@@ -15,10 +15,16 @@ module Kood
       options = { separator: true, align: 'ljust' }.merge(options)
 
       if @width
-        sliced = row.scan(/.{1,#{ @width }}/m).map { |s| s.send(options[:align], @width) }
-        sliced = sliced.map { |s| s = set_color(s, options[:color]) } if options.key? :color
-        sliced += [self.separator] if options[:separator]
-        self.add_rows(sliced)
+        sliced_rows = []
+        row.split("\n").each do |row|
+          sliced = row.scan(/.{1,#{ @width }}/m)
+          sliced = [''] if sliced.empty?
+          sliced.map! { |s| s.send(options[:align], @width) }
+          sliced.map! { |s| s = set_color(s, options[:color]) } if options.key? :color
+          sliced_rows += sliced
+        end
+        sliced_rows += [self.separator] if options[:separator]
+        self.add_rows(sliced_rows)
       else
         @rows.push(row)
       end
@@ -36,13 +42,16 @@ module Kood
   class Table
     include Shell
 
-    attr_accessor :width, :columns
+    attr_accessor :width, :columns, :col_width
 
-    def initialize(num_columns)
-      @width     = terminal_size[0] || 70
+    def initialize(num_columns, width = nil)
+      terminal_width = width || terminal_size[0] || 70
+      spare_cols = (terminal_width - 3 * num_columns -1) % num_columns
+      @width     = terminal_width - spare_cols
       @num_cols  = num_columns
       @col_width = (@width - 3 * num_columns -1) / num_columns
       @columns   = []
+      raise "There is not enough space to accommodate all columns" if @col_width < 5
     end
 
     def new_column
@@ -72,9 +81,9 @@ module Kood
       #      |                 |
       #   |--|--|  becomes  |--+--|
       #      |                 |
+      output.gsub!("\u2501 \u2503 \u2501", "\u2501\u2501\u254B\u2501\u2501")
       output.gsub!("\u2501 \u2503", "\u2501\u2501\u252B")
       output.gsub!("\u2503 \u2501", "\u2523\u2501\u2501")
-      output.gsub!("\u2501 \u2503 \u2501", "\u2501\u2501\u254B\u2501\u2501")
       output
     end
 

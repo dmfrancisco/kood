@@ -12,24 +12,34 @@ module Kood
       super rescue raise "The specified card does not exist."
     end
 
-    def self.get_by_title!(title, options = {})
-      cards = if options.key? :list # Search in a given list
-        options[:list].cards
-      else # Search in all lists
-        Board.current!.lists.inject([]) { |cards, list| cards += list.cards }
+    def self.get_by_id(id, options = {})
+      card = get(id) # FIXME This is not scoped by list
+      return card if card
+
+      unless options[:exact]
+        cards = options.key?(:list) ? options[:list].cards : Board.current!.cards
+        cards = cards.select { |c| c.id.include? id }
+        return cards.first unless cards.empty?
       end
+    end
+
+    def self.get_by_title(title, options = {})
+      cards = options.key?(:list) ? options[:list].cards : Board.current!.cards
 
       # Get list of partial matches, if the :exact option is set to false
       results = options[:exact] ? cards : cards.select { |c| c.title.match title }
 
       # If :exact is true and/or there are exact matches, return the first
-      results = results.select { |c| c.title == title }.first || results.first
-      results || raise("The specified card does not exist.")
+      results.select { |c| c.title == title }.first || results.first
+    end
+
+    def self.get_by_id_or_title(id_or_title, options = {})
+      get_by_id(id_or_title, options) || get_by_title(id_or_title, options)
     end
 
     def self.get_by_id_or_title!(id_or_title, options = {})
-      card = Kood::Card.get(id_or_title)
-      card ||= Kood::Card.get_by_title!(id_or_title, options)
+      card = get_by_id_or_title(id_or_title, options)
+      card || raise("The specified card does not exist.")
     end
 
     def self.adapter!(branch, root)
