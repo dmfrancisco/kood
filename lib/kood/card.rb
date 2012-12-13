@@ -44,6 +44,7 @@ module Kood
 
     def self.adapter!(branch, root)
       adapter :git, Kood.repo(root), branch: branch, path: 'cards'
+      adapter.file_extension = 'md'
     end
 
     def edit_file(board)
@@ -66,7 +67,7 @@ module Kood
     private
 
     def filepath
-      File.join('cards', id)
+      File.join('cards', id) + ".#{ adapter.file_extension }"
     end
   end
 end

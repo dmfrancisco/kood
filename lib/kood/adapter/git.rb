@@ -1,5 +1,12 @@
 module Adapter
   module Git
+    attr_accessor :file_extension
+
+    def key_for(key)
+      key = super + "." + (@file_extension || 'yml')
+      File.join(*[options[:path], key].compact)
+    end
+
     def encode(value)
       # If it contains a `content` attribute, other data is in a YAML front matter block
       if value.key? "content"
