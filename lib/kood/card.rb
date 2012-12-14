@@ -49,8 +49,8 @@ module Kood
 
     def edit_file(board)
       Dir.chdir(board.root) do
-        current_branch = `git rev-parse --abbrev-ref HEAD`.chomp
-        `git checkout #{ board.id } -q`
+        current_branch = Kood::Git.current_branch
+        Kood::Git.checkout(board.id)
 
         yield filepath if block_given?
 
@@ -59,7 +59,7 @@ module Kood
         changed = !changes.empty?
         save! if changed
 
-        `git reset --hard && git checkout #{ current_branch } -q`
+        Kood::Git.checkout(current_branch, force: true)
         return changed
       end
     end

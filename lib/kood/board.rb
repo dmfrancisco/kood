@@ -41,11 +41,11 @@ module Kood
 
     def delete
       if is_current?
-        `cd #{ root } && git reset --hard && git checkout master -q`
+        Kood::Git.checkout_with_chdir(root, 'master', force: true)
         Kood.config.current_board_id = nil
         Kood.config.save! unless Kood.config.changes.empty?
       end
-      `cd #{ root } && git branch -D #{ id }`
+      Kood::Git.delete_branch_with_chdir(root, id)
       # Since we deleted the branch, the default behavior is not necessary
     end
 
