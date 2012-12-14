@@ -303,7 +303,7 @@ class Kood::CLI < Thor
     table = Kood::Table.new(1, width)
     col = table.new_column
     col.add_row(card.title, separator: !card.content.empty?)
-    col.add_row(card.content) if card.content
+    col.add_row(card.content) unless card.content.empty?
     col.add_row("#{ card.id } (created at #{ card.created_at })", color: 'black')
 
     puts table.separator('first'), table, table.separator('last')

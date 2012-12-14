@@ -40,7 +40,7 @@ describe Kood::CLI do
       kood('boards').must_include "  foo\n* bar"
     end
     it "creates an external board on `board foo --repo`" do
-      kood('board foo -r /Users/dmfranc/.kood/example-git/').must_match "Board created"
+      kood('board foo -r /tmp/example-git/').must_match "Board created"
       kood('boards').must_include "foo"
     end
   end
