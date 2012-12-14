@@ -226,6 +226,22 @@ class Kood::CLI < Thor
     error $!
   end
 
+  desc "pull [<BOARD-ID>]", "Pulls cards a the remote server"
+  def pull(board_id = nil)
+    board = board_id.nil? ? Kood::Board.current! : Kood::Board.get!(board_id)
+    msg, success = board.pull
+
+    if success and not msg.include? "Already up-to-date"
+      ok "Board updated successfully."
+    elsif success
+      ok "Board already up-to-date."
+    else
+      error "An unexpected error occurred."
+    end
+  rescue
+    error $!
+  end
+
   # Invoked with `kood --help`, `kood help`, `kood help <cmd>` and `kood --help <cmd>`
   def help(cli = nil)
     case cli

@@ -58,14 +58,25 @@ module Kood
       Kood.config.save! unless Kood.config.changes.empty?
     end
 
-    def self.adapter!(board_id)
-      board_root = root(board_id)
-      adapter :git, Kood.repo(board_root), branch: board_id
-      List.adapter! board_id, board_root
+    def pull
+      Dir.chdir(root) do
+        current_branch = Kood::Git.current_branch
+        success = Kood::Git.checkout(id)
+        out, pull_successful = Kood::Git.pull(id)
+        success &&= Kood::Git.checkout(id, force: true)
+
+        return out, success && pull_successful
+      end
     end
 
     def root
       Board.root(id)
+    end
+
+    def self.adapter!(board_id)
+      board_root = root(board_id)
+      adapter :git, Kood.repo(board_root), branch: board_id
+      List.adapter! board_id, board_root
     end
 
     private
