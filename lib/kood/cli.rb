@@ -4,6 +4,8 @@ require_relative "cli/table"
 class Kood::CLI < Thor
   namespace :kood
 
+  class_option :debug, :desc => "Run Kood in debug mode", :type => :boolean
+
   # Thor help is not used for subcommands. Docs for each subcommand are written in the
   # man files.
   #
@@ -259,8 +261,13 @@ class Kood::CLI < Thor
   # FIXME Should not be necessary, since Thor catches exceptions when not in debug mode
   def self.start(given_args=ARGV, config={})
     super
-  rescue
-    puts "\e[31m#{ $! }\e[0m"
+  rescue Exception => e
+    if given_args.include? '--debug'
+      puts e.inspect
+      puts e.backtrace
+    else
+      puts "\e[31m#{ e }\e[0m"
+    end
   end
 
   private
