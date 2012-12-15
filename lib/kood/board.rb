@@ -41,11 +41,12 @@ module Kood
 
     def delete
       if is_current?
-        Kood::Git.checkout_with_chdir(root, 'master', force: true)
+        adapter.client.git.reset(chdir: root, hard: true)
+        adapter.client.git.checkout({ chdir: root }, 'master')
         Kood.config.current_board_id = nil
         Kood.config.save! unless Kood.config.changes.empty?
       end
-      Kood::Git.delete_branch_with_chdir(root, id)
+      adapter.client.git.branch({ chdir: root, :D => true }, id)
       # Since we deleted the branch, the default behavior is not necessary
     end
 
@@ -59,14 +60,15 @@ module Kood
     end
 
     def pull
-      Dir.chdir(root) do
-        current_branch = Kood::Git.current_branch
-        success = Kood::Git.checkout(id)
-        out, pull_successful = Kood::Git.pull(id)
-        success &&= Kood::Git.checkout(id, force: true)
+      current_branch = adapter.client.head.name
+      adapter.client.git.checkout({ chdir: root }, id)
 
-        return out, success && pull_successful
-      end
+      # FIXME Assumes remote is called 'origin'
+      out = adapter.client.git.pull({ chdir: root }, "origin", id)
+
+      adapter.client.git.reset(chdir: root, hard: true)
+      adapter.client.git.checkout({ chdir: root }, current_branch)
+      return out
     end
 
     def root

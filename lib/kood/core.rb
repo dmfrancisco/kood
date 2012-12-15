@@ -20,10 +20,9 @@ module Kood
       new_repo = Grit::Repo.init(path)
 
       unless new_repo.branches.any? { |b| b.name == 'master' } # Check if master exists
-        Dir.chdir(path) do
-          FileUtils.touch('k')
-          `git add k && git commit -m init`
-        end
+        index = new_repo.index
+        index.add('k', '')
+        index.commit("init")
       end
       new_repo # If this has been done before, the above command will do nothing
     end

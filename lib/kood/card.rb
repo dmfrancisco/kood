@@ -48,20 +48,21 @@ module Kood
     end
 
     def edit_file(board)
+      current_branch = adapter.client.head.name
+      adapter.client.git.checkout({ chdir: board.root }, board.id)
+
       Dir.chdir(board.root) do
-        current_branch = Kood::Git.current_branch
-        Kood::Git.checkout(board.id)
-
         yield filepath if block_given?
-
-        data = File.read(File.join(board.root, filepath))
-        self.attributes = Card.adapter.decode(data)
-        changed = !changes.empty?
-        save! if changed
-
-        Kood::Git.checkout(current_branch, force: true)
-        return changed
       end
+
+      data = File.read(File.join(board.root, filepath))
+      self.attributes = Card.adapter.decode(data)
+      changed = !changes.empty?
+      save! if changed
+
+      adapter.client.git.reset(chdir: board.root, hard: true)
+      adapter.client.git.checkout({ chdir: board.root }, current_branch)
+      return changed
     end
 
     private

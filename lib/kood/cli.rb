@@ -229,14 +229,12 @@ class Kood::CLI < Thor
   desc "pull [<BOARD-ID>]", "Pulls cards a the remote server"
   def pull(board_id = nil)
     board = board_id.nil? ? Kood::Board.current! : Kood::Board.get!(board_id)
-    msg, success = board.pull
+    output = board.pull
 
-    if success and not msg.include? "Already up-to-date"
-      ok "Board updated successfully."
-    elsif success
+    if output.include? "Already up-to-date"
       ok "Board already up-to-date."
     else
-      error "An unexpected error occurred."
+      ok "Board updated successfully."
     end
   rescue
     error $!
@@ -276,6 +274,7 @@ class Kood::CLI < Thor
   # For example, when running `kood c` Thor will raise "Ambiguous task c matches ..."
   # FIXME Should not be necessary, since Thor catches exceptions when not in debug mode
   def self.start(given_args=ARGV, config={})
+    Grit.debug = given_args.include?('--debug')
     super
   rescue Exception => e
     if given_args.include? '--debug'
