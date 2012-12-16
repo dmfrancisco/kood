@@ -5,6 +5,8 @@ class Kood::CLI < Thor
   namespace :kood
 
   class_option :debug, :desc => "Run Kood in debug mode", :type => :boolean
+  class_option "no-color", :desc => "Disable colorization in output", :type => :boolean
+
 
   # Thor help is not used for subcommands. Docs for each subcommand are written in the
   # man files.
@@ -39,12 +41,12 @@ class Kood::CLI < Thor
   method_option :repo, :aliases => '-r', :type => :string
   def board(board_id = nil)
     # If no arguments and options are specified, the command displays all existing boards
-    if board_id.nil? and options.empty?
+    if board_id.nil? and no_method_options?
       error "No boards were found." if Kood.config.boards.empty?
       puts Kood.config.boards.map { |b| (b.is_current? ? "* " : "  ") + b.id }
 
     # If the <board-id> argument is present without options, a new board will be created
-    elsif options.empty? or options.key? 'repo'
+    elsif no_method_options? or options.key? 'repo'
       board = Kood.config.boards.create(id: board_id, custom_repo: options['repo'])
 
       if Kood.config.boards.size == 1
@@ -94,12 +96,12 @@ class Kood::CLI < Thor
     current_board = Kood::Board.current!
 
     # If no arguments and options are specified, the command displays all existing lists
-    if list_id.nil? and options.empty?
+    if list_id.nil? and no_method_options?
       error "No lists were found." if current_board.lists.empty?
       puts current_board.list_ids
 
     # If the <list-id> argument is present without options, a new list will be created
-    elsif options.empty?
+    elsif no_method_options?
       current_board.lists.create(id: list_id)
       ok "List created."
 
@@ -142,13 +144,13 @@ class Kood::CLI < Thor
     current_board = Kood::Board.current!
 
     # If no arguments and options are specified, the command displays all existing cards
-    if card_title.nil? and options.empty?
+    if card_title.nil? and no_method_options?
       return error "No lists were found." if current_board.lists.empty?
       print_board(current_board)
 
     # If the <card-title> argument is present without options, the card with the given
     # ID or title is displayed
-    elsif card_id_or_title and options.empty?
+    elsif card_id_or_title and no_method_options?
       card = Kood::Card.get_by_id_or_title!(card_id_or_title)
       print_card(current_board, card)
 
@@ -280,6 +282,8 @@ class Kood::CLI < Thor
     if given_args.include? '--debug'
       puts e.inspect
       puts e.backtrace
+    elsif given_args.include? '--no-color'
+      puts e
     else
       puts "\e[31m#{ e }\e[0m"
     end
@@ -324,12 +328,26 @@ class Kood::CLI < Thor
     puts table.separator('first'), table, table.separator('last')
   end
 
+  private
+
+  def no_method_options?
+    (options.keys - self.class.class_options.keys).empty?
+  end
+
   def ok(text)
     # This idea comes from `git.io/logbook`, which is awesome. You should check it out.
-    say text, :green
+    if options.key? 'no-color'
+      puts text
+    else
+      say text, :green
+    end
   end
 
   def error(text)
-    say text, :red
+    if options.key? 'no-color'
+      puts text
+    else
+      say text, :red
+    end
   end
 end
