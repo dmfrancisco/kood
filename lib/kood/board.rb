@@ -15,7 +15,7 @@ module Kood
         Kood.config.custom_repos[board.id] = custom_repo
         Kood.config.save!
       end
-      Board.adapter! board.id # To create a board we need to change the checked out branch
+      Board.adapter! board.id # To create a board we need to change the current branch
     end
 
     def self.get(id)
@@ -32,7 +32,7 @@ module Kood
     end
 
     def self.current!
-      current or raise "No board has been checked out yet."
+      current or raise "No board has been selected yet."
     end
 
     def is_current?
@@ -54,7 +54,7 @@ module Kood
       lists.inject([]) { |cards, list| cards += list.cards }
     end
 
-    def checkout
+    def select
       Kood.config.current_board_id = id
       Kood.config.save! unless Kood.config.changes.empty?
     end

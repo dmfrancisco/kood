@@ -16,7 +16,7 @@ describe Kood::CLI do
       kood('boards').must_equal "No boards were found."
     end
     it "creates on `board foo`" do
-      kood('board foo').must_equal "Board created and checked out."
+      kood('board foo').must_equal "Board created and selected."
       kood('boards').must_equal "* foo"
     end
     it "forces unique IDs" do
@@ -31,20 +31,21 @@ describe Kood::CLI do
       kood('board foo')
       kood('board foo -d').must_equal "Board deleted."
     end
-    it "deletes the checked out board on `board --delete`" do
+    it "deletes the current board on `board --delete`" do
       kood('board foo')
       kood('board --delete').must_equal "Board deleted."
     end
     it "complains deleting an inexistent board" do
       kood('board foo -d').must_equal "The specified board does not exist."
     end
-    it "checks out board on `board checkout`" do
+    it "switches to board on `board switch`" do
       kood('board foo', 'board bar')
-      kood('checkout bar').must_equal "Board checked out."
-      kood('boards').must_equal "  foo\n* bar"
+      kood('switch bar').must_equal "Board switched to bar."
+      kood('boards').must_equal     "  foo\n* bar"
+      kood('select bar').must_equal "Board switched to bar." # Alias
     end
     it "creates an external board on `board foo --repo`" do
-      kood('board foo -r /tmp/example-git/').must_equal "Board created and checked out."
+      kood('board foo -r /tmp/example-git/').must_equal "Board created and selected."
       kood('boards').must_equal "* foo"
     end
   end
@@ -65,7 +66,7 @@ describe Kood::CLI do
       kood('list bar').must_equal "A list with this ID already exists."
     end
     it "does not force unique IDs between boards" do
-      kood('list bar', 'board test', 'checkout test')
+      kood('list bar', 'board test', 'switch test')
       kood('list bar').must_equal "List created."
     end
     it "displays a list on `lists`" do

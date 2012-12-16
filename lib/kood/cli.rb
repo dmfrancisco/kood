@@ -31,7 +31,7 @@ class Kood::CLI < Thor
   desc "board [OPTIONS] [<BOARD-ID>]", "Display and manage boards"
   #
   # Delete a board. If <board-id> is present, the specified board will be deleted.
-  # With no arguments, the currently checked out board will be deleted.
+  # With no arguments, the current board will be deleted.
   method_option :delete, :aliases => '-d', :type => :boolean
   #
   # Clone a board. <board-id> will be cloned to <new-board-id>.
@@ -51,8 +51,8 @@ class Kood::CLI < Thor
       board = Kood.config.boards.create(id: board_id, custom_repo: options['repo'])
 
       if Kood.config.boards.size == 1
-        board.checkout
-        ok "Board created and checked out."
+        board.select
+        ok "Board created and selected."
       else
         ok "Board created."
       end
@@ -74,13 +74,14 @@ class Kood::CLI < Thor
   end
   map 'boards' => 'board'
 
-  desc "checkout <BOARD-ID>", "Checkout a board"
-  def checkout(board_id)
-    Kood::Board.get!(board_id).checkout
-    ok "Board checked out."
+  desc "switch <BOARD-ID>", "Switches to the specified board"
+  def switch(board_id)
+    Kood::Board.get!(board_id).select
+    ok "Board switched to #{ board_id }."
   rescue
     error $!
   end
+  map 'select' => 'switch'
 
   desc "list [OPTIONS] [<LIST-ID>]", "Display and manage lists"
   #
@@ -132,7 +133,7 @@ class Kood::CLI < Thor
   # Delete a card. If <card-title> is present, the specified card will be deleted.
   method_option :delete, :aliases => '-d', :type => :boolean
   #
-  # Show status information of the checked out board associated with the given user.
+  # Show status information of the current board associated with the given user.
   method_option :assigned, :aliases => '-a', :type => :string
   #
   # Does the card action in the given list.
@@ -192,7 +193,7 @@ class Kood::CLI < Thor
   end
   map 'cards' => 'card'
 
-  desc "edit [<CARD-ID|CARD-TITLE>]", "Launches the configured editor to modify the card"
+  desc "edit [<CARD-ID|CARD-TITLE>]", "Launch the configured editor to modify the card"
   def edit(card_id_or_title = nil)
     current_board = Kood::Board.current!
     card = Kood::Card.get_by_id_or_title!(card_id_or_title)
@@ -216,7 +217,7 @@ class Kood::CLI < Thor
     end
   end
 
-  desc "update [<CARD-ID|CARD-TITLE>]", "Persists changes made to cards", hide: true
+  desc "update [<CARD-ID|CARD-TITLE>]", "Persist changes made to cards", hide: true
   def update(card_id_or_title = nil)
     current_board = Kood::Board.current!
     card = Kood::Card.get_by_id_or_title!(card_id_or_title)
@@ -231,7 +232,7 @@ class Kood::CLI < Thor
     error $!
   end
 
-  desc "pull [<BOARD-ID>]", "Pulls cards a the remote server"
+  desc "pull [<BOARD-ID>]", "Pull changes made to the board from the central server", hide: true
   def pull(board_id = nil)
     board = board_id.nil? ? Kood::Board.current! : Kood::Board.get!(board_id)
     output = board.pull
@@ -250,14 +251,15 @@ class Kood::CLI < Thor
     case cli
       when nil then command = "kood"
       when "boards" then command = "kood-board"
-      when "lists" then command = "kood-list"
-      when "cards" then command = "kood-card"
+      when "select" then command = "kood-switch"
+      when "lists"  then command = "kood-list"
+      when "cards"  then command = "kood-card"
       else command = "kood-#{cli}"
     end
 
     manpages = %w(
       kood-board
-      kood-checkout
+      kood-switch
       kood-list
       kood-card)
 
