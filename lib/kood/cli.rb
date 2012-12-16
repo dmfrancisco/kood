@@ -7,6 +7,7 @@ class Kood::CLI < Thor
   class_option :debug, :desc => "Run Kood in debug mode", :type => :boolean
   class_option "no-color", :desc => "Disable colorization in output", :type => :boolean
 
+  check_unknown_options!
 
   # Thor help is not used for subcommands. Docs for each subcommand are written in the
   # man files.
