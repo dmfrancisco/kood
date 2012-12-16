@@ -197,11 +197,13 @@ class Kood::CLI < Thor
     current_board = Kood::Board.current!
     card = Kood::Card.get_by_id_or_title!(card_id_or_title)
 
-    editor = ENV['KOOD_EDITOR'] || ENV['EDITOR']
+    editor = [ ENV['KOOD_EDITOR'], ENV['EDITOR'] ].find { |e| !e.nil? && !e.empty? }
 
     if editor
       changed = card.edit_file(current_board) do |filepath|
-        `#{ editor } #{ filepath }`
+        command = "#{ editor } #{ filepath }"
+        success = system(command)
+        return error("Could not run `#{ command }`.") unless success
       end
 
       if changed
@@ -210,7 +212,7 @@ class Kood::CLI < Thor
         error "The editor exited without changes. Run `kood update` to persist changes."
       end
     else
-      error "To edit a card set $EDITOR or $BUNDLER_EDITOR"
+      error "To edit a card set $EDITOR or $KOOD_EDITOR."
     end
   end
 
@@ -274,7 +276,7 @@ class Kood::CLI < Thor
   end
 
   # Reimplement the `start` method in order to catch raised exceptions
-  # For example, when running `kood c` Thor will raise "Ambiguous task c matches ..."
+  # For example, when running `kood c`, Thor will raise "Ambiguous task c matches ..."
   # FIXME Should not be necessary, since Thor catches exceptions when not in debug mode
   def self.start(given_args=ARGV, config={})
     Grit.debug = given_args.include?('--debug')

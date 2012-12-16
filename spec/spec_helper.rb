@@ -14,6 +14,12 @@ class Kood::Config
   end
 end
 
+def set_env(vars)
+  vars.each_pair do |key, value|
+    ENV[key.to_s] = value
+  end
+end
+
 # Shortcut to execute thor commands and capture its output
 def kood(*cmds)
   quick_test = ENV["KOOD_TEST_OPTS"].to_s.include? '--quick'
