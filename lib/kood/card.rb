@@ -48,21 +48,23 @@ module Kood
     end
 
     def edit_file(board)
-      current_branch = adapter.client.head.name
-      adapter.client.git.checkout({ chdir: board.root }, board.id)
+      changed = false
 
-      Dir.chdir(board.root) do
-        yield filepath if block_given?
+      adapter.client.with_stash(chdir: board.root) do
+        adapter.client.with_branch({ chdir: board.root }, board.id) do
+          Dir.chdir(board.root) do
+            yield filepath if block_given?
+          end
+
+          data = File.read(File.join(board.root, filepath))
+          self.attributes = Card.adapter.decode(data)
+          changed = !changes.empty?
+
+          save! if changed
+          adapter.client.git.reset(chdir: board.root, hard: true)
+        end
       end
-
-      data = File.read(File.join(board.root, filepath))
-      self.attributes = Card.adapter.decode(data)
-      changed = !changes.empty?
-      save! if changed
-
-      adapter.client.git.reset(chdir: board.root, hard: true)
-      adapter.client.git.checkout({ chdir: board.root }, current_branch)
-      return changed
+      changed
     end
 
     private

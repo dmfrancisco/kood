@@ -1,6 +1,7 @@
 Bundler.require
 
 require 'kood/adapter/git.rb'
+require 'kood/adapter/grit.rb'
 require 'kood/version.rb'
 require 'kood/card.rb'
 require 'kood/list.rb'

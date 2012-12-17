@@ -201,13 +201,15 @@ class Kood::CLI < Thor
     editor = [ ENV['KOOD_EDITOR'], ENV['EDITOR'] ].find { |e| !e.nil? && !e.empty? }
 
     if editor
+      success, command = false, ""
       changed = card.edit_file(current_board) do |filepath|
         command = "#{ editor } #{ filepath }"
         success = system(command)
-        return error("Could not run `#{ command }`.") unless success
       end
 
-      if changed
+      if not success
+        error "Could not run `#{ command }`."
+      elsif changed
         ok "Card updated."
       else
         error "The editor exited without changes. Run `kood update` to persist changes."
@@ -215,6 +217,8 @@ class Kood::CLI < Thor
     else
       error "To edit a card set $EDITOR or $KOOD_EDITOR."
     end
+  rescue
+    error $!
   end
 
   desc "update [<CARD-ID|CARD-TITLE>]", "Persist changes made to cards", hide: true

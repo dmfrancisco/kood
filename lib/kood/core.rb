@@ -18,6 +18,9 @@ module Kood
     @repo ||= {}
     @repo[path] ||= begin
       new_repo = Grit::Repo.init(path)
+      Dir.chdir(path) # TODO This is not ideal but otherwise it would be necessary to pass
+      # a :chdir option in all calls to Grit. This may be a bug in Grit related with the
+      # --work-tree flag
 
       unless new_repo.branches.any? { |b| b.name == 'master' } # Check if master exists
         index = new_repo.index
