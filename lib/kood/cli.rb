@@ -34,9 +34,9 @@ class Kood::CLI < Thor
   # With no arguments, the current board will be deleted.
   method_option :delete, :aliases => '-d', :type => :boolean
   #
-  # Clone a board. <board-id> will be cloned to <new-board-id>.
+  # Copy a board. <board-id> will be copied to <new-board-id>.
   # <board-id> is kept intact and a new one is created with the exact same data.
-  method_option :clone, :aliases => '-c', :type => :string
+  method_option :copy, :aliases => '-c', :type => :string
   #
   # Create a board in an external repository.
   method_option :repo, :aliases => '-r', :type => :string
@@ -66,9 +66,9 @@ class Kood::CLI < Thor
     else
       board = board_id.nil? ? Kood::Board.current! : Kood::Board.get!(board_id)
 
-      if options.key? 'clone'
+      if options.key? 'copy'
         # TODO
-      end # The cloned board may be deleted now, if the :delete option is present
+      end # The copied board may be deleted now, if the :delete option is present
 
       if options.key? 'delete'
         Kood.config.boards.destroy(board.id)
@@ -94,9 +94,9 @@ class Kood::CLI < Thor
   # Delete a list. If <list-id> is present, the specified list will be deleted.
   method_option :delete, :aliases => '-d', :type => :boolean
   #
-  # Clone a list. <list-id> will be cloned to <new-list-id>.
+  # Copy a list. <list-id> will be copied to <new-list-id>.
   # <list-id> is kept intact and a new one is created with the exact same data.
-  method_option :clone, :aliases => '-c', :type => :string
+  method_option :copy, :aliases => '-c', :type => :string
   #
   # Move a list to another board. <list-id> will be moved to <board-id>.
   method_option :move, :aliases => '-m', :type => :string
@@ -116,9 +116,9 @@ class Kood::CLI < Thor
     else
       list = Kood::List.get!(list_id)
 
-      if options.key? 'clone'
+      if options.key? 'copy'
         # TODO
-      end # The cloned list may be deleted or moved now
+      end # The copied list may be deleted or moved now
 
       if options.key? 'move'
         # TODO
@@ -170,9 +170,9 @@ class Kood::CLI < Thor
       ok "Card created."
 
     else
-      if options.key? 'clone'
+      if options.key? 'copy'
         # TODO
-      end # The cloned card may be deleted or moved now
+      end # The copied card may be deleted or moved now
 
       if options.key? 'move'
         # TODO
