@@ -250,6 +250,28 @@ class Kood::CLI < Thor
     error $!
   end
 
+  desc "push [<BOARD-ID>]", "Push changes made to the board to the central server", hide: true
+  def push(board_id = nil)
+    board = board_id.nil? ? Kood::Board.current! : Kood::Board.get!(board_id)
+    output = board.push
+
+    if output.include? "Everything up-to-date"
+      ok "Board in central server already up-to-date."
+    else
+      ok "Board in central server updated successfully."
+    end
+  rescue
+    error $!
+  end
+
+  desc "sync [<BOARD-ID>]", "Synchronize a board. Only published branches can be synced"
+  def sync(board_id = nil)
+    board = board_id.nil? ? Kood::Board.current! : Kood::Board.get!(board_id)
+    # TODO
+  rescue
+    error $!
+  end
+
   # Invoked with `kood --help`, `kood help`, `kood help <cmd>` and `kood --help <cmd>`
   def help(cli = nil)
     case cli

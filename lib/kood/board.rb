@@ -66,7 +66,15 @@ module Kood
           return adapter.client.git.pull({ chdir: root }, "origin", id)
         end
       end
+    end
 
+    def push
+      adapter.client.with_stash(chdir: root) do
+        adapter.client.with_branch({ chdir: root }, id) do
+          # FIXME Assumes remote is called 'origin'
+          return adapter.client.git.push({ chdir: root }, "origin", id)
+        end
+      end
     end
 
     def root
