@@ -50,8 +50,8 @@ module Kood
     def edit_file(board)
       changed = false
 
-      adapter.client.with_stash(chdir: board.root) do
-        adapter.client.with_branch({ chdir: board.root }, board.id) do
+      adapter.client.with_stash do
+        adapter.client.with_branch({}, board.id) do
           Dir.chdir(board.root) do
             yield filepath if block_given?
           end
@@ -61,7 +61,7 @@ module Kood
           changed = !changes.empty?
 
           save! if changed
-          adapter.client.git.reset(chdir: board.root, hard: true)
+          adapter.client.git.reset(hard: true)
         end
       end
       changed
