@@ -2,13 +2,9 @@ require 'spec_helper'
 
 describe Kood::CLI do
   before do
-    if ENV["KOOD_TEST_OPTS"].to_s.include? '--quick'
-      %w{ refs/heads HEAD }.each { |f| Kood.repo.git.fs_delete(f) }
-      Kood.clear_repo # Force kood to create the master branch again
-      Kood::Config.clear_instance
-    else
-      FileUtils.rm_rf(Kood.root, secure: true) # Delete the storage folder
-    end
+    %w{ refs/heads HEAD }.each { |f| Kood.repo.git.fs_delete(f) }
+    Kood.clear_repo # Force kood to create the master branch again
+    Kood::Config.clear_instance
   end
 
   describe "kood board" do
