@@ -82,6 +82,10 @@ module Kood
       exit_status.zero? ? push(remote) : [exit_status, out, err]
     end
 
+    def published?
+      adapter.client.remotes.any? { |b| b.name =~ /\/#{ id }$/ }
+    end
+
     def root
       Board.root(id)
     end

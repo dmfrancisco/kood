@@ -43,8 +43,14 @@ class Kood::CLI < Thor
   def board(board_id = nil)
     # If no arguments and options are specified, the command displays all existing boards
     if board_id.nil? and no_method_options?
-      error "No boards were found." if Kood.config.boards.empty?
-      puts Kood.config.boards.map { |b| (b.is_current? ? "* " : "  ") + b.id }
+      return error "No boards were found." if Kood.config.boards.empty?
+
+      max_board_id = Kood.config.boards.max_by { |b| b.id.size }.id.size
+      Kood.config.boards.each do |b|
+        marker     = b.is_current? ? "* " : "  "
+        visibility = b.published?  ? "(shared)" : "(private)"
+        puts marker + b.id.to_s.ljust(max_board_id + 2) +  set_color(visibility, :black)
+      end
 
     # If the <board-id> argument is present without options, a new board will be created
     elsif no_method_options? or options.key? 'repo'
@@ -403,6 +409,14 @@ class Kood::CLI < Thor
 
   def no_method_options?
     (options.keys - self.class.class_options.keys).empty?
+  end
+
+  def set_color(text, *colors)
+    if options.key? 'no-color'
+      text
+    else
+      super
+    end
   end
 
   def ok(text)

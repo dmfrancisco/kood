@@ -13,7 +13,7 @@ describe Kood::CLI do
     end
     it "creates on `board foo`" do
       kood('board foo').must_equal "Board created and selected."
-      kood('boards').must_equal "* foo"
+      kood('boards').must_equal "* foo  (private)"
     end
     it "forces unique IDs" do
       kood('board foo')
@@ -21,7 +21,7 @@ describe Kood::CLI do
     end
     it "displays a list on `boards`" do
       kood('board foo', 'board bar')
-      kood('boards').must_equal "* foo\n  bar"
+      kood('boards').must_equal "* foo  (private)\n  bar  (private)"
     end
     it "deletes on `board foo --delete`" do
       kood('board foo')
@@ -37,12 +37,12 @@ describe Kood::CLI do
     it "switches to board on `board switch`" do
       kood('board foo', 'board bar')
       kood('switch bar').must_equal "Board switched to bar."
-      kood('boards').must_equal     "  foo\n* bar"
+      kood('boards').must_equal     "  foo  (private)\n* bar  (private)"
       kood('select bar').must_equal "Board switched to bar." # Alias
     end
     it "creates an external board on `board foo --repo`" do
       kood('board foo -r /tmp/example-git/').must_equal "Board created and selected."
-      kood('boards').must_equal "* foo"
+      kood('boards').must_equal "* foo  (shared)"
     end
   end
 
