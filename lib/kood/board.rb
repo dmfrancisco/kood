@@ -59,22 +59,27 @@ module Kood
       Kood.config.save! unless Kood.config.changes.empty?
     end
 
-    def pull
+    # git remote add upstream https://github.com/user/repo.git
+    # puts adapter.client.remote_list
+    def pull(remote = 'origin')
       adapter.client.with_stash do
         adapter.client.with_branch({}, id) do
-          # FIXME Assumes remote is called 'origin'
-          return adapter.client.git.pull({}, "origin", id)
+          adapter.client.git.pull({ process_info: true }, remote, id)
         end
       end
     end
 
-    def push
+    def push(remote = 'origin')
       adapter.client.with_stash do
         adapter.client.with_branch({}, id) do
-          # FIXME Assumes remote is called 'origin'
-          return adapter.client.git.push({}, "origin", id)
+          adapter.client.git.push({ process_info: true }, remote, id)
         end
       end
+    end
+
+    def sync(remote = 'origin')
+      exit_status, out, err = pull(remote)
+      exit_status.zero? ? push(remote) : [exit_status, out, err]
     end
 
     def root
