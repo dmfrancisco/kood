@@ -27,10 +27,10 @@ module Kood
       cards = options.key?(:list) ? options[:list].cards : Board.current!.cards
 
       # Get list of partial matches, if the :exact option is set to false
-      results = options[:exact] ? cards : cards.select { |c| c.title.match title }
+      results = options[:exact] ? cards : cards.select { |c| c.title.match /#{ title }/i }
 
       # If :exact is true and/or there are exact matches, return the first
-      results.select { |c| c.title == title }.first || results.first
+      results.select { |c| c.title.casecmp(title).zero? }.first || results.first
     end
 
     def self.get_by_id_or_title(id_or_title, options = {})

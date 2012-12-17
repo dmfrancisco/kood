@@ -105,6 +105,8 @@ describe Kood::CLI do
       kood('card fo').must_include  "\u2503 fo"
       kood('card foo').must_include "\u2503 foo"
       kood('card f').must_include   "\u2503 fo"
+      kood('card Fo').must_include  "\u2503 fo" # Case-insentive comparison
+      kood('card F').must_include   "\u2503 fo"
     end
     it "displays an empty board if any cards exist" do
       res = kood('cards')
