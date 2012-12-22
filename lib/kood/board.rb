@@ -1,3 +1,5 @@
+require 'toystore'
+
 module Kood
   class Board
     include Toy::Store

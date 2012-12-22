@@ -1,6 +1,6 @@
 require 'thor'
 require 'thor/group'
-require_relative "cli/table"
+require_relative 'cli/table'
 
 class Kood::CLI < Thor
   namespace :kood

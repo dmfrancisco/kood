@@ -1,3 +1,5 @@
+require 'adapter-git'
+
 module Adapter
   module Git
     attr_accessor :file_extension

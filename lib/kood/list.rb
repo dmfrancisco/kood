@@ -1,3 +1,5 @@
+require 'toystore'
+
 module Kood
   class List
     include Toy::Store
