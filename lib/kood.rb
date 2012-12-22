@@ -1,10 +1,10 @@
 Bundler.require
 
-require 'kood/adapter/git.rb'
-require 'kood/adapter/grit.rb'
-require 'kood/version.rb'
-require 'kood/card.rb'
-require 'kood/list.rb'
-require 'kood/board.rb'
-require 'kood/core.rb'
-require 'kood/cli.rb'
+require 'kood/adapter/git'
+require 'kood/adapter/grit'
+require 'kood/version'
+require 'kood/card'
+require 'kood/list'
+require 'kood/board'
+require 'kood/core'
+require 'kood/cli'

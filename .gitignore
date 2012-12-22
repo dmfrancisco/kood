@@ -43,3 +43,4 @@ build/config/buildinfo.properties
 # Ruby specifics
 .rvmrc
 Gemfile.lock
+pkg/*
