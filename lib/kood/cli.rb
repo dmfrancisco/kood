@@ -458,8 +458,11 @@ if program.eql? 'kood' # File is being imported from the bin and not from the te
       plugin_class = Kood::Plugin.const_get(plugin_class_name)
       Kood::CLI.register(plugin_class, plugin_name, plugin_name, "Kood plugin")
     rescue LoadError
-      puts "Could not find command or plugin \"#{ plugin_name }\"."
-      exit
+      # TODO Thor supports partial subcommands and aliases for subcommands. The
+      # `method_defined?` condition is not enough. For now, we don't exit here and
+      # everything should still work as expected, but this could be improved.
+      #
+      # puts "Could not find command or plugin \"#{ plugin_name }\"."
     end
   end
 end
