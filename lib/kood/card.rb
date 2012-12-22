@@ -42,12 +42,8 @@ module Kood
       card || raise("The specified card does not exist.")
     end
 
-    def self.adapter!(branch, root)
-      adapter :git, Kood.repo(root), branch: branch, path: 'cards'
-      adapter.file_extension = 'md'
-    end
-
-    def edit_file(board)
+    def edit_file
+      board = Board.current!
       changed = false
 
       adapter.client.with_stash do
@@ -68,6 +64,19 @@ module Kood
     end
 
     private
+
+    # ToyStore supports adapters per model but this program needs an adapter per instance
+    def self.with_adapter(branch, root)
+      current_client = adapter.client
+      current_options = adapter.options
+
+      adapter :git, Kood.repo(root), branch: branch, path: 'cards'
+      adapter.file_extension = 'md'
+      yield
+    ensure
+      adapter :git, current_client, current_options
+      adapter.file_extension = 'md'
+    end
 
     def filepath
       File.join('cards', id) + ".#{ adapter.file_extension }"

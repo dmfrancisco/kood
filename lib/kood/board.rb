@@ -15,12 +15,16 @@ module Kood
         Kood.config.custom_repos[board.id] = custom_repo
         Kood.config.save!
       end
-      Board.adapter! board.id # To create a board we need to change the current branch
+      board.update_adapter # To create a board we need to change the current branch
     end
 
     def self.get(id)
-      adapter! id
-      super
+      board = nil
+      Board.with_adapter(id, root(id)) do
+        board = super
+        board.update_adapter unless board.nil?
+      end
+      return board
     end
 
     def self.get!(id)
@@ -59,8 +63,6 @@ module Kood
       Kood.config.save! unless Kood.config.changes.empty?
     end
 
-    # git remote add upstream https://github.com/user/repo.git
-    # puts adapter.client.remote_list
     def pull(remote = 'origin')
       adapter.client.with_stash do
         adapter.client.with_branch({}, id) do
@@ -90,13 +92,35 @@ module Kood
       Board.root(id)
     end
 
-    def self.adapter!(board_id)
-      board_root = root(board_id)
-      adapter :git, Kood.repo(board_root), branch: board_id
-      List.adapter! board_id, board_root
+    def adapter
+      @adapter || self.class.adapter
+    end
+
+    # Set adapter for this instance
+    def update_adapter
+      @adapter = Adapter[:git].new(Kood.repo(root), branch: id)
+    end
+
+    def with_context
+      Board.with_adapter(id, root) do
+        yield self
+      end
     end
 
     private
+
+    # ToyStore supports adapters per model but this program needs an adapter per instance
+    def self.with_adapter(branch, root)
+      current_client = adapter.client
+      current_options = adapter.options
+
+      adapter :git, Kood.repo(root), branch: branch
+      List.with_adapter(branch, root) do
+        yield
+      end
+    ensure
+      adapter :git, current_client, current_options
+    end
 
     def self.root(board_id)
       Kood.config.custom_repos[board_id] or Kood.root

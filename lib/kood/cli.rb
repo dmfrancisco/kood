@@ -102,32 +102,32 @@ class Kood::CLI < Thor
   # Move a list to another board. <list-id> will be moved to <board-id>.
   method_option :move, :aliases => '-m', :type => :string
   def list(list_id = nil)
-    current_board = Kood::Board.current!
+    Kood::Board.current!.with_context do |current_board|
+      # If no arguments and options are specified, the command displays all existing lists
+      if list_id.nil? and no_method_options?
+        error "No lists were found." if current_board.lists.empty?
+        puts current_board.list_ids
 
-    # If no arguments and options are specified, the command displays all existing lists
-    if list_id.nil? and no_method_options?
-      error "No lists were found." if current_board.lists.empty?
-      puts current_board.list_ids
+      # If the <list-id> argument is present without options, a new list will be created
+      elsif no_method_options?
+        current_board.lists.create(id: list_id)
+        ok "List created."
 
-    # If the <list-id> argument is present without options, a new list will be created
-    elsif no_method_options?
-      current_board.lists.create(id: list_id)
-      ok "List created."
+      else
+        list = Kood::List.get!(list_id)
 
-    else
-      list = Kood::List.get!(list_id)
+        if options.key? 'copy'
+          # TODO
+        end # The copied list may be deleted or moved now
 
-      if options.key? 'copy'
-        # TODO
-      end # The copied list may be deleted or moved now
+        if options.key? 'move'
+          # TODO
+          # If the list was moved, it cannot be deleted
 
-      if options.key? 'move'
-        # TODO
-        # If the list was moved, it cannot be deleted
-
-      elsif options.key? 'delete'
-        current_board.lists.destroy(list.id)
-        ok "List deleted."
+        elsif options.key? 'delete'
+          current_board.lists.destroy(list.id)
+          ok "List deleted."
+        end
       end
     end
   rescue
@@ -149,50 +149,51 @@ class Kood::CLI < Thor
   # Launches the configured editor to modify the card
   method_option :edit, :aliases => '-e', :type => :boolean
   def card(card_id_or_title = nil)
-    card_title = card_id = card_id_or_title
-    current_board = Kood::Board.current!
+    Kood::Board.current!.with_context do |current_board|
+      card_title = card_id = card_id_or_title
 
-    # If no arguments and options are specified, the command displays all existing cards
-    if card_title.nil? and no_method_options?
-      return error "No lists were found." if current_board.lists.empty?
-      print_board(current_board)
+      # If no arguments and options are specified, the command displays all existing cards
+      if card_title.nil? and no_method_options?
+        return error "No lists were found." if current_board.lists.empty?
+        print_board(current_board)
 
-    # If the <card-title> argument is present without options, the card with the given
-    # ID or title is displayed
-    elsif card_id_or_title and no_method_options?
-      card = Kood::Card.get_by_id_or_title!(card_id_or_title)
-      print_card(current_board, card)
+      # If the <card-title> argument is present without options, the card with the given
+      # ID or title is displayed
+      elsif card_id_or_title and no_method_options?
+        card = Kood::Card.get_by_id_or_title!(card_id_or_title)
+        print_card(current_board, card)
 
-    # If the <card-title> argument is present without options despite the list, a new
-    # card will be created
-    elsif card_title and options.key? 'list'
-      list = Kood::List.get! options['list']
-      list.cards.create(title: card_title)
-      ok "Card created."
+      # If the <card-title> argument is present without options despite the list, a new
+      # card will be created
+      elsif card_title and options.key? 'list'
+        list = Kood::List.get! options['list']
+        list.cards.create(title: card_title)
+        ok "Card created."
 
-    else
-      if options.key? 'copy'
-        # TODO
-      end # The copied card may be deleted or moved now
+      else
+        if options.key? 'copy'
+          # TODO
+        end # The copied card may be deleted or moved now
 
-      if options.key? 'move'
-        # TODO
-        # If the card was moved, it cannot be deleted
+        if options.key? 'move'
+          # TODO
+          # If the card was moved, it cannot be deleted
 
-      elsif options.key? 'delete'
-        current_board.lists.each do |list|
-          cards = list.cards.select { |c| c.id == card_id || c.title == card_title }
-          if cards.size == 1 # If only 1 result, since there may be cards with same title
-            card = cards.first
-            list.cards.destroy(card.id)
-            ok "Card deleted."
-            return
+        elsif options.key? 'delete'
+          current_board.lists.each do |list|
+            cards = list.cards.select { |c| c.id == card_id || c.title == card_title }
+            if cards.size == 1 # If only 1 result, since there may be cards with same title
+              card = cards.first
+              list.cards.destroy(card.id)
+              ok "Card deleted."
+              return
+            end
           end
-        end
-        error "The specified card does not exist."
+          error "The specified card does not exist."
 
-      elsif options.key? 'edit'
-        edit(card_id_or_title) # Execute the `edit` task
+        elsif options.key? 'edit'
+          edit(card_id_or_title) # Execute the `edit` task
+        end
       end
     end
   rescue
@@ -202,27 +203,28 @@ class Kood::CLI < Thor
 
   desc "edit [<CARD-ID|CARD-TITLE>]", "Launch the configured editor to modify the card"
   def edit(card_id_or_title = nil)
-    current_board = Kood::Board.current!
-    card = Kood::Card.get_by_id_or_title!(card_id_or_title)
+    Kood::Board.current!.with_context do |current_board|
+      card = Kood::Card.get_by_id_or_title!(card_id_or_title)
 
-    editor = [ ENV['KOOD_EDITOR'], ENV['EDITOR'] ].find { |e| !e.nil? && !e.empty? }
+      editor = [ ENV['KOOD_EDITOR'], ENV['EDITOR'] ].find { |e| !e.nil? && !e.empty? }
 
-    if editor
-      success, command = false, ""
-      changed = card.edit_file(current_board) do |filepath|
-        command = "#{ editor } #{ filepath }"
-        success = system(command)
-      end
+      if editor
+        success, command = false, ""
+        changed = card.edit_file do |filepath|
+          command = "#{ editor } #{ filepath }"
+          success = system(command)
+        end
 
-      if not success
-        error "Could not run `#{ command }`."
-      elsif changed
-        ok "Card updated."
+        if not success
+          error "Could not run `#{ command }`."
+        elsif changed
+          ok "Card updated."
+        else
+          error "The editor exited without changes. Run `kood update` to persist changes."
+        end
       else
-        error "The editor exited without changes. Run `kood update` to persist changes."
+        error "To edit a card set $EDITOR or $KOOD_EDITOR."
       end
-    else
-      error "To edit a card set $EDITOR or $KOOD_EDITOR."
     end
   rescue
     error $!
@@ -230,14 +232,15 @@ class Kood::CLI < Thor
 
   desc "update [<CARD-ID|CARD-TITLE>]", "Persist changes made to cards", hide: true
   def update(card_id_or_title = nil)
-    current_board = Kood::Board.current!
-    card = Kood::Card.get_by_id_or_title!(card_id_or_title)
-    changed = card.edit_file(current_board)
+    Kood::Board.current!.with_context do |current_board|
+      card = Kood::Card.get_by_id_or_title!(card_id_or_title)
+      changed = card.edit_file
 
-    if changed
-      ok "Card updated."
-    else
-      error "No changes to persist."
+      if changed
+        ok "Card updated."
+      else
+        error "No changes to persist."
+      end
     end
   rescue
     error $!
