@@ -1,4 +1,5 @@
-require "thor"
+require 'thor'
+require 'thor/group'
 require_relative "cli/table"
 
 class Kood::CLI < Thor
@@ -349,6 +350,8 @@ class Kood::CLI < Thor
     puts "kood version #{ Kood::VERSION }"
   end
 
+  private
+
   # Reimplement the `start` method in order to catch raised exceptions
   # For example, when running `kood c`, Thor will raise "Ambiguous task c matches ..."
   # FIXME Should not be necessary, since Thor catches exceptions when not in debug mode
@@ -365,8 +368,6 @@ class Kood::CLI < Thor
       puts "\e[31m#{ e }\e[0m"
     end
   end
-
-  private
 
   def print_board(board)
     num_lists = board.list_ids.size
@@ -405,8 +406,6 @@ class Kood::CLI < Thor
     puts table.separator('first'), table, table.separator('last')
   end
 
-  private
-
   def no_method_options?
     (options.keys - self.class.class_options.keys).empty?
   end
@@ -433,6 +432,31 @@ class Kood::CLI < Thor
       puts text
     else
       say text, :red
+    end
+  end
+end
+
+# Third-party commands (plugins)
+#
+program = File.basename $PROGRAM_NAME
+command = ARGV.first
+if program.eql? 'kood' # File is being imported from the bin and not from the test suite
+  unless command.nil? or Kood::CLI.method_defined? command # Check if command is unknown
+    begin
+      plugin_name = command # The command is the name of the plugin
+
+      # Require the plugin, which must be accessible and follow the naming convention
+      require "kood-plugin-#{ plugin_name }"
+
+      # Transform plugin name to a valid class name (for example, foo_bar becomes FooBar)
+      plugin_class_name = Thor::Util.camel_case(plugin_name)
+
+      # Get the class and register it (the plugin must extend Thor)
+      plugin_class = Kood::Plugin.const_get(plugin_class_name)
+      Kood::CLI.register(plugin_class, plugin_name, plugin_name, "Kood plugin")
+    rescue LoadError
+      puts "Could not find command or plugin \"#{ plugin_name }\"."
+      exit
     end
   end
 end
