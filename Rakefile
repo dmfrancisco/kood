@@ -1,3 +1,5 @@
+#!/usr/bin/env rake
+
 # To run all tests at once, simply do:
 #   bundle exec rake test
 #
