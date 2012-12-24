@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 require 'spec_helper'
 
 describe Kood::CLI do
@@ -44,6 +45,7 @@ describe Kood::CLI do
       kood('board foo -r /tmp/example-git/').must_equal "Board created and selected."
       kood('boards').must_equal "* foo  (private)"
     end
+    # TODO Test the push, pull and sync commands
   end
 
   describe "kood list" do
@@ -114,6 +116,11 @@ describe Kood::CLI do
       res.must_include "hello" # One of the lists
       res.wont_include "bar"   # The other board
     end
+    it "supports titles with non-ascii characters" do
+      kood('card "hello ümlaut ✔" --list hello')
+      kood('card "hello ümlaut ✔"').must_include "hello ümlaut ✔"
+    end
+    # TODO Test for utf-8 in card descriptions
   end
 
   describe "kood edit" do

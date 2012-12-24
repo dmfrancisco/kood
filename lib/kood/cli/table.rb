@@ -13,6 +13,7 @@ module Kood
 
     def add_row(row, options = {})
       options = { separator: true, align: 'ljust' }.merge(options)
+      row = row.to_s.force_encoding("UTF-8")
 
       if @width
         sliced_rows = []

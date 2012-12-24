@@ -470,3 +470,9 @@ if program.eql? 'kood' # File is being imported from the bin and not from the te
     end
   end
 end
+
+# Warn users that non-ascii characters in the arguments may cause errors
+if ARGV.any? { |arg| not arg.ascii_only? }
+  puts "For now, please avoid non-ascii characters. We're still working on providing" \
+    " full support for utf-8 encoding."
+end
