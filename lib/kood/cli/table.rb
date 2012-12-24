@@ -84,7 +84,7 @@ module Kood
       output.gsub!("\u2501 \u2503 \u2501", "\u2501\u2501\u254B\u2501\u2501")
       output.gsub!("\u2501 \u2503", "\u2501\u2501\u252B")
       output.gsub!("\u2503 \u2501", "\u2523\u2501\u2501")
-      output
+      output.chomp
     end
 
     # This code comes from `git.io/command_line_reporter`.

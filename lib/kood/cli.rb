@@ -390,9 +390,12 @@ class Kood::CLI < Thor
     title = Kood::Table.new(1, body.width)
     title.new_column.add_row(board.id, align: 'center')
 
-    puts title.to_s(vertical_separator: false)
-    puts header.separator('first'), header
-    puts body.separator('middle'), body, body.separator('last')
+    out = [ title.to_s(vertical_separator: false) ]
+    out << header.separator('first') << header
+    out << body.separator('middle') << body << body.separator('last')
+
+    # `join` is used to prevent partial content from being printed if an exception occurs
+    puts out.join("\n")
   end
 
   def print_card(board, card)
@@ -406,7 +409,8 @@ class Kood::CLI < Thor
     col.add_row(card.content) unless card.content.empty?
     col.add_row("#{ card.id } (created at #{ card.created_at })", color: 'black')
 
-    puts table.separator('first'), table, table.separator('last')
+    # `join` is used to prevent partial content from being printed if an exception occurs
+    puts [table.separator('first'), table, table.separator('last')].join("\n")
   end
 
   def no_method_options?
