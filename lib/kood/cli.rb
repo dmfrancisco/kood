@@ -5,8 +5,8 @@ require_relative 'cli/table'
 class Kood::CLI < Thor
   namespace :kood
 
-  class_option :debug, :desc => "Run Kood in debug mode", :type => :boolean
-  class_option "no-color", :desc => "Disable colorization in output", :type => :boolean
+  class_option 'debug', :desc => "Run Kood in debug mode", :type => :boolean
+  class_option 'no-color', :desc => "Disable colorization in output", :type => :boolean
 
   check_unknown_options!
 
