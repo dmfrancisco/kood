@@ -5,10 +5,13 @@ module Kood
     include Toy::Store
 
     # Attributes
-    attribute :title,      String
-    attribute :content,    String
-    attribute :position,   Float
-    attribute :created_at, Time, default: lambda { Time.now }
+    attribute :title,        String
+    attribute :content,      String
+    attribute :participants, Array
+    attribute :labels,       Array
+    attribute :position,     Integer
+    attribute :date,         Time, default: lambda { Time.now }
+    attribute :more,         Hash # to store additional user-defined properties
 
     def self.get!(id)
       super rescue raise "The specified card does not exist."
