@@ -1,3 +1,4 @@
+require 'active_support/core_ext'
 require 'toystore'
 
 module Kood
@@ -47,6 +48,29 @@ module Kood
       card || raise("The specified card does not exist.")
     end
 
+    def has_custom_attrs?
+      not self.more.blank?
+    end
+
+    def printable_attrs(to_print = [ 'labels', 'participants', 'more' ])
+      attrs = self.attributes.dup
+      attrs.delete_if { |k, v| v.blank? or k.eql? 'more' or not to_print.include? k }
+      attrs.merge! self.more
+
+      max_attr_size = attrs.keys.max_by { |k| k.size }.size unless attrs.empty?
+
+      attrs.map do |key, value|
+        case value
+        when Hash
+          value.map { |k, v| "#{ (k.humanize + ":").ljust(max_attr_size + 2) } #{ v }" }
+        when Array
+          "#{ (key.humanize + ":").ljust(max_attr_size + 2) } #{ value.join(', ') }"
+        else
+          "#{ (key.humanize + ":").ljust(max_attr_size + 2) } #{ value }"
+        end
+      end.compact.join("\n")
+    end
+
     def edit_file
       board = Board.current!
       changed = false
@@ -59,7 +83,7 @@ module Kood
 
           data = File.read(File.join(board.root, filepath))
           self.attributes = Card.adapter.decode(data)
-          changed = !changes.empty?
+          changed = self.changed?
 
           save! if changed
           adapter.client.git.reset(hard: true)

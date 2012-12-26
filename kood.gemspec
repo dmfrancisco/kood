@@ -16,9 +16,10 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
 
-  gem.add_development_dependency "ronn", "~> 0.7.0"
-  gem.add_development_dependency "rake", "~> 0.9.2"
-  gem.add_runtime_dependency "thor", "~> 0.16.0"
-  gem.add_runtime_dependency "adapter-git", "~> 0.5.0"
-  gem.add_runtime_dependency "toystore", "~> 0.10.4"
+  gem.add_development_dependency "ronn",      "~> 0.7.0"
+  gem.add_development_dependency "rake",      "~> 0.9.2"
+  gem.add_runtime_dependency "activesupport", "~> 3.2.9"
+  gem.add_runtime_dependency "thor",          "~> 0.16.0"
+  gem.add_runtime_dependency "adapter-git",   "~> 0.5.0"
+  gem.add_runtime_dependency "toystore",      "~> 0.10.4"
 end

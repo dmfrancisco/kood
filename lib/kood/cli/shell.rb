@@ -81,6 +81,12 @@ module Kood
       unicode? ? "\u2503" : '|'
     end
 
+    # Try to convert a string to a float or integer. Returns the converted object or the
+    # original string if it cannot be converted (from stackoverflow.com/a/8072164/543293)
+    def try_convert(v)
+      ((float = Float(v)) && (float % 1.0 == 0) ? float.to_i : float) rescue v
+    end
+
     protected
 
     def lookup_color(color)

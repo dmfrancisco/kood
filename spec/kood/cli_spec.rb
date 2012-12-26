@@ -120,6 +120,19 @@ describe Kood::CLI do
       kood('card "hello ümlaut ✔" --list hello')
       kood('card "hello ümlaut ✔"').must_include "hello ümlaut ✔"
     end
+    it "supports setting several attributes at once" do
+      kood('c lorem -l hello --set title:"Lorem Ipsum" content:"Content"')
+      out = kood('card lorem')
+      out.must_include "Lorem Ipsum"
+      out.must_include "Content"
+    end
+    it "supports setting custom attributes with different types" do
+      kood('c lorem -l hello --set foo:bar priority:1 hello_world:-0.42')
+      out = kood('card lorem')
+      out.must_include "Foo:          bar"
+      out.must_include "Priority:     1"
+      out.must_include "Hello world:  -0.42"
+    end
     # TODO Test for utf-8 in card descriptions
   end
 
