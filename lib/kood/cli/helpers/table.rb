@@ -63,25 +63,17 @@ module Kood
     end
 
     def to_s(options = { separator: true })
-      max_num_rows = @cols.max_by { |col| col.rows.length }.rows.length
-      max_num_rows = 1 if max_num_rows == 0 # There aren't any rows in this table yet
-      vertical_bar = options[:separator] ? self.vertical_bar : " "
+      max_num_rows = [num_rows_of_biggest_column, 1].max # If there aren't any rows, use 1
+      vbar = options[:separator] ? self.vertical_bar : " "
       out = ""
 
       max_num_rows.times do |i|
         # Don't print the last separator if this is the last thing to be printed
         break if max_num_rows == i+1 and @cols[0].rows[i] == @cols[0].separator
-
-        out += @cols.map { |col| vertical_bar + " #{ col.rows[i] || " "*@col_width } " }.join
-        out += vertical_bar + "\n"
+        out += @cols.map{ |col| vbar + " #{ col.rows[i] || " "*@col_width } " }.join + vbar +"\n"
       end
 
-      # Improve table corners.    |                 |
-      # For example,           |--|--|  becomes  |--+--|
-      #                           |                 |
-      out.gsub!("\u2501 \u2503 \u2501", "\u2501\u2501\u254B\u2501\u2501")
-      out.gsub!("\u2501 \u2503", "\u2501\u2501\u252B")
-      out.gsub("\u2503 \u2501", "\u2523\u2501\u2501").chomp
+      improve_cell_corners(out.chomp)
     end
 
     # This code comes from `git.io/command_line_reporter`.
@@ -97,6 +89,22 @@ module Kood
         left = right = center = '+'
       end
       left + @cols.map { |c| horizontal_bar * (c.width + 2) }.join(center) + right
+    end
+
+    private
+
+    # Returns the number of rows of the biggest column
+    def num_rows_of_biggest_column
+      @cols.max_by { |col| col.rows.length }.rows.length
+    end
+
+    # Improves cell corners  |               |
+    # For example,        |--|--| becomes |--+--|
+    #                        |               |
+    def improve_cell_corners(table_str)
+      table_str = table_str.gsub("\u2501 \u2503 \u2501", "\u2501\u2501\u254B\u2501\u2501")
+      table_str = table_str.gsub("\u2501 \u2503", "\u2501\u2501\u252B")
+      table_str.gsub("\u2503 \u2501", "\u2523\u2501\u2501")
     end
   end
 end
