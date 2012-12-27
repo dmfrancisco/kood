@@ -63,17 +63,15 @@ module Kood
     end
 
     def to_s(options = { separator: true })
-      max_num_rows = [num_rows_of_biggest_column, 1].max # If there aren't any rows, use 1
-      vbar = options[:separator] ? self.vertical_bar : " "
-      out = ""
+      max_col_rows = biggest_column.rows
+      return empty_row(options) if max_col_rows.length.zero?
 
-      max_num_rows.times do |i|
+      output = max_col_rows.each_with_index.map do |col_row, i|
         # Don't print the last separator if this is the last thing to be printed
-        break if max_num_rows == i+1 and @cols[0].rows[i] == @cols[0].separator
-        out += @cols.map{ |col| vbar + " #{ col.rows[i] || " "*@col_width } " }.join + vbar +"\n"
-      end
+        row(i, options) unless i == max_col_rows.length-1 and col_row == @cols[0].separator
+      end.join.chomp
 
-      improve_cell_corners(out.chomp)
+      improve_cell_corners(output)
     end
 
     # This code comes from `git.io/command_line_reporter`.
@@ -93,9 +91,22 @@ module Kood
 
     private
 
-    # Returns the number of rows of the biggest column
-    def num_rows_of_biggest_column
-      @cols.max_by { |col| col.rows.length }.rows.length
+    # Returns the column with the largest number of rows
+    def biggest_column
+      @cols.max_by { |col| col.rows.length }
+    end
+
+    # Returns an empty (full width) row
+    def empty_row(options = { separator: true })
+      vbar = options[:separator] ? self.vertical_bar : " "
+      "#{ vbar } #{ ' ' * @col_width } #{ vbar }"
+    end
+
+    # Returns an entire row from the table (which may cross several columns)
+    def row(row_index, options = { separator: true })
+      vbar = options[:separator] ? self.vertical_bar : " "
+      out = @cols.map { |col| vbar + " #{ col.rows[row_index] || " "*@col_width } " }.join
+      out + vbar + "\n"
     end
 
     # Improves cell corners  |               |

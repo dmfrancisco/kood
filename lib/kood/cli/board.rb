@@ -93,7 +93,7 @@ class Kood::CLI < Thor
     title = Kood::Table.new(1, body.width)
     title.new_column.add_row(board.id, align: 'center')
 
-    out = [ title.to_s(vertical_separator: false) ]
+    out = [ title.to_s(separator: false) ]
     out << header.separator('first') << header
     out << body.separator('middle') << body << body.separator('last')
 
