@@ -39,8 +39,6 @@ class Kood::CLI < Thor
         operate_on_card(current_board, card_id)
       end
     end
-  rescue
-    error $!
   end
   map 'cards' => 'card'
 

@@ -25,8 +25,6 @@ class Kood::CLI < Thor
         error "To edit a card set $EDITOR or $KOOD_EDITOR."
       end
     end
-  rescue
-    error $!
   end
 
   desc "update [<CARD-ID|CARD-TITLE>]", "Persist changes made to cards", hide: true
@@ -41,8 +39,6 @@ class Kood::CLI < Thor
         error "No changes to persist."
       end
     end
-  rescue
-    error $!
   end
 
 end

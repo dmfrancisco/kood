@@ -26,8 +26,6 @@ class Kood::CLI < Thor
         operate_on_list(current_board, list_id)
       end
     end
-  rescue
-    error $!
   end
   map 'lists' => 'list'
 

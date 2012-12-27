@@ -25,8 +25,6 @@ class Kood::CLI < Thor
     else
       operate_on_board(board_id)
     end
-  rescue
-    error $!
   end
   map 'boards' => 'board'
 

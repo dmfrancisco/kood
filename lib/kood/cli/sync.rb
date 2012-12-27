@@ -32,8 +32,6 @@ class Kood::CLI < Thor
         error err.gsub('fatal: ', '')
       end
     end
-  rescue
-    error $!
   end
 
   desc "pull [<BOARD-ID>]", "Pull changes made to the board from the central server", hide: true
@@ -53,8 +51,6 @@ class Kood::CLI < Thor
       error "The following unexpected error was received from git:"
       error err.gsub('fatal: ', '')
     end
-  rescue
-    error $!
   end
 
   desc "push [<BOARD-ID>]", "Push changes made to the board to the central server", hide: true
@@ -74,8 +70,6 @@ class Kood::CLI < Thor
       error "The following unexpected error was received from git:"
       error err.gsub('fatal: ', '')
     end
-  rescue
-    error $!
   end
 
 end
