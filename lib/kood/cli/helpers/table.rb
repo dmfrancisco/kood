@@ -43,7 +43,7 @@ module Kood
   class Table
     include Shell
 
-    attr_accessor :width, :columns, :col_width
+    attr_accessor :width, :cols, :col_width
 
     def initialize(num_columns, width = nil)
       terminal_width = width || terminal_size[0] || 70
@@ -51,41 +51,37 @@ module Kood
       @width     = terminal_width - spare_cols
       @num_cols  = num_columns
       @col_width = (@width - 3 * num_columns -1) / num_columns
-      @columns   = []
+      @cols      = []
       raise "There is not enough space to accommodate all columns" if @col_width < 5
     end
 
     def new_column
-      raise "Unable to add more columns to table" if @columns.size == @num_cols
+      raise "Unable to add more columns to table" if @cols.size == @num_cols
       column = Kood::Column.new(@col_width)
-      @columns << column
+      @cols << column
       column
     end
 
     def to_s(options = { separator: true })
-      max_num_rows = @columns.max_by { |col| col.rows.length }.rows.length
+      max_num_rows = @cols.max_by { |col| col.rows.length }.rows.length
       max_num_rows = 1 if max_num_rows == 0 # There aren't any rows in this table yet
       vertical_bar = options[:separator] ? self.vertical_bar : " "
-      output = ""
+      out = ""
 
       max_num_rows.times do |i|
         # Don't print the last separator if this is the last thing to be printed
-        break if max_num_rows == i+1 and @columns[0].rows[i] == @columns[0].separator
+        break if max_num_rows == i+1 and @cols[0].rows[i] == @cols[0].separator
 
-        columns.each do |col|
-          output += vertical_bar + " #{ col.rows[i] || " "*@col_width } "
-        end
-        output += vertical_bar + "\n"
+        out += @cols.map { |col| vertical_bar + " #{ col.rows[i] || " "*@col_width } " }.join
+        out += vertical_bar + "\n"
       end
 
-      # Improve unicode table corners. For example,
-      #      |                 |
-      #   |--|--|  becomes  |--+--|
-      #      |                 |
-      output.gsub!("\u2501 \u2503 \u2501", "\u2501\u2501\u254B\u2501\u2501")
-      output.gsub!("\u2501 \u2503", "\u2501\u2501\u252B")
-      output.gsub!("\u2503 \u2501", "\u2523\u2501\u2501")
-      output.chomp
+      # Improve table corners.    |                 |
+      # For example,           |--|--|  becomes  |--+--|
+      #                           |                 |
+      out.gsub!("\u2501 \u2503 \u2501", "\u2501\u2501\u254B\u2501\u2501")
+      out.gsub!("\u2501 \u2503", "\u2501\u2501\u252B")
+      out.gsub("\u2503 \u2501", "\u2523\u2501\u2501").chomp
     end
 
     # This code comes from `git.io/command_line_reporter`.
@@ -93,24 +89,14 @@ module Kood
     def separator(type = 'middle')
       if unicode?
         case type
-        when 'first'
-          left   = "\u250F"
-          center = "\u2533"
-          right  = "\u2513"
-        when 'middle'
-          left   = "\u2523"
-          center = "\u254A"
-          right  = "\u252B"
-        when 'last'
-          left   = "\u2517"
-          center = "\u253B"
-          right  = "\u251B"
+        when 'first'  then left, center, right = "\u250F", "\u2533", "\u2513"
+        when 'middle' then left, center, right = "\u2523", "\u254A", "\u252B"
+        when 'last'   then left, center, right = "\u2517", "\u253B", "\u251B"
         end
       else
         left = right = center = '+'
       end
-
-      left + self.columns.map { |c| horizontal_bar * (c.width + 2) }.join(center) + right
+      left + @cols.map { |c| horizontal_bar * (c.width + 2) }.join(center) + right
     end
   end
 end

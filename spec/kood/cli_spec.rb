@@ -167,4 +167,7 @@ describe Kood::CLI do
   it "complains if an unknown command is typed" do
     kood('unknown').must_equal "Could not find task \"unknown\"."
   end
+  # it "supports third-party plugins" do # TODO
+  #   kood('example foo').must_equal "Hello from example"
+  # end
 end
