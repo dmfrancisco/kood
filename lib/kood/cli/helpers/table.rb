@@ -21,7 +21,7 @@ module Kood
           sliced = row.scan(/.{1,#{ @width }}/m)
           sliced = [''] if sliced.empty?
           sliced.map! { |s| s.send(options[:align], @width) }
-          sliced.map! { |s| s = set_color(s, options[:color]) } if options.key? :color
+          sliced.map! { |s| s = set_color(s, *options[:color]) } if options.key? :color
           sliced_rows += sliced
         end
         sliced_rows += [self.separator] if options[:separator]

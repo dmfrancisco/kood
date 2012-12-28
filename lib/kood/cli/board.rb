@@ -37,7 +37,7 @@ class Kood::CLI < Thor
     Kood.config.boards.each do |b|
       marker     = b.is_current? ? "* " : "  "
       visibility = b.published?  ? "(shared)" : "(private)"
-      puts marker + b.id.to_s.ljust(max_board_id + 2) +  set_color(visibility, :black)
+      puts marker + b.id.to_s.ljust(max_board_id + 2) + set_color(visibility, :black, :bold)
     end
   end
 
@@ -84,7 +84,7 @@ class Kood::CLI < Thor
       column = body.new_column
       list.cards.each do |card|
         column.add_row(card.title, separator: false)
-        column.add_row(card.id.slice(0, 8), color: 'black')
+        column.add_row(card.id.slice(0, 8), color: [:black, :bold])
       end
     end
 

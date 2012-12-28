@@ -140,7 +140,7 @@ class Kood::CLI < Thor
     col.add_row(card.title, separator: (!card.content.empty? or card.has_custom_attrs?))
     col.add_row(card.content) unless card.content.empty?
     col.add_row(card.printable_attrs) if card.has_custom_attrs?
-    col.add_row("#{ card.id } (created at #{ card.date })", color: 'black')
+    col.add_row("#{ card.id } (created at #{ card.date })", color: [:black, :bold])
 
     # `join` is used to prevent partial content from being printed if an exception occurs
     puts [table.separator('first'), table, table.separator('last')].join("\n")
