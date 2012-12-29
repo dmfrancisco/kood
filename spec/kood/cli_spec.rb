@@ -32,7 +32,7 @@ describe Kood::CLI do
       kood('board foo')
       kood('board --delete').must_equal "Board deleted."
     end
-    it "complains deleting an inexistent board" do
+    it "complains to delete an inexistent board" do
       kood('board foo -d').must_equal "The specified board does not exist."
     end
     it "switches to board on `board switch`" do
@@ -75,7 +75,7 @@ describe Kood::CLI do
       kood('list bar')
       kood('list bar -d').must_equal "List deleted."
     end
-    it "complains deleting an inexistent list" do
+    it "complains to delete an inexistent list" do
       kood('list bar -d').must_equal "The specified list does not exist."
     end
   end
@@ -92,10 +92,16 @@ describe Kood::CLI do
       kood('card "Sample card" -l hello')
       kood('card "Sample card" -d').must_equal "Card deleted."
     end
-    it "complains deleting an inexistent card" do
+    it "complains to delete an inexistent card" do
       kood('card none -d').must_equal "The specified card does not exist."
     end
-    it "complains showing an inexistent card" do
+    it "complains to delete when there are several matches" do
+      kood('card "foo 0" -l hello', 'card "foo 1" -l hello')
+      kood('card "foo" -d').must_equal "Multiple cards match the given criteria."
+      kood('card "bar" -l hello', 'card "bar" -l hello')
+      kood('card "bar" -d').must_equal "Multiple cards match the given criteria."
+    end
+    it "complains to show an inexistent card" do
       kood('card "Sample card"').must_equal "The specified card does not exist."
     end
     it "displays information on `card 'Sample card'`" do

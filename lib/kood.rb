@@ -1,8 +1,12 @@
 require 'kood/adapter/git'
 require 'kood/adapter/grit'
 require 'kood/version'
-require 'kood/card'
-require 'kood/list'
-require 'kood/board'
-require 'kood/core'
-require 'kood/cli'
+
+module Kood
+  autoload :Card,  'kood/card'
+  autoload :List,  'kood/list'
+  autoload :Board, 'kood/board'
+
+  require 'kood/cli'
+  require 'kood/core'
+end

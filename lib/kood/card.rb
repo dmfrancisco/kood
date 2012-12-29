@@ -5,6 +5,9 @@ module Kood
   class Card
     include Toy::Store
 
+    # References
+    reference :list, List
+
     # Attributes
     attribute :title,        String
     attribute :content,      String
@@ -14,45 +17,45 @@ module Kood
     attribute :date,         Time, default: lambda { Time.now }
     attribute :more,         Hash # to store additional user-defined properties
 
+    # Observers
+    before_create { |card| card.list = list }
+
     def self.get!(id)
       super rescue raise "The specified card does not exist."
     end
 
-    def self.get_by_id(id, options = {})
-      card = get(id) # FIXME This is not scoped by list
-      return card if card
-
-      unless options[:exact]
-        cards = options.key?(:list) ? options[:list].cards : Board.current!.cards
-        cards = cards.select { |c| c.id.include? id }
-        return cards.first unless cards.empty?
-      end
-    end
-
-    def self.get_by_title(title, options = {})
+    def self.find_all_by_partial_attribute(attrs, search_param, options = {})
       cards = options.key?(:list) ? options[:list].cards : Board.current!.cards
 
-      # Get list of partial matches, if the :exact option is set to false
-      results = options[:exact] ? cards : cards.select { |c| c.title.match /#{ title }/i }
-
-      # If :exact is true and/or there are exact matches, return the first
-      results.select { |c| c.title.casecmp(title).zero? }.first || results.first
+      attrs.split('_or_').map do |a|
+        cards.select { |c| c.attributes[a].match /#{ search_param }/i }
+      end.flatten
     end
 
-    def self.get_by_id_or_title(id_or_title, options = {})
-      get_by_id(id_or_title, options) || get_by_title(id_or_title, options)
-    end
+    def self.find_by_partial_attribute!(attrs, search_param, options = {})
+      matches = find_all_by_partial_attribute(attrs, search_param, options)
+      raise "The specified card does not exist." if matches.empty?
 
-    def self.get_by_id_or_title!(id_or_title, options = {})
-      card = get_by_id_or_title(id_or_title, options)
-      card || raise("The specified card does not exist.")
+      # If `unique` is present, an exception must be raised if:
+      # - More than one exact match was found
+      # - Zero exact matches were found but more than one partial match was found
+      # If `unique` not present, return the first match giving preference to exact matches
+      exact_matches = attrs.split('_or_').map do |a|
+        matches.select { |c| c.attributes[a].casecmp(search_param).zero? }
+      end.flatten
+      unique_exact_match = (options[:unique] == true and exact_matches.length == 1)
+      several_matches = (not options[:unique] and not exact_matches.empty?)
+      return exact_matches.first if unique_exact_match or several_matches
+
+      raise "Multiple cards match the given criteria." if matches.length > 1 and options[:unique]
+      matches.first
     end
 
     def has_custom_attrs?
       not self.more.blank?
     end
 
-    def printable_attrs(to_print = [ 'labels', 'participants', 'more' ])
+    def pretty_attributes(to_print = [ 'labels', 'participants', 'more' ])
       attrs = self.attributes.dup
       attrs.delete_if { |k, v| v.blank? or k.eql? 'more' or not to_print.include? k }
       attrs.merge! self.more
@@ -93,6 +96,16 @@ module Kood
     end
 
     private
+
+    def self.method_missing(meth, *args, &block)
+      if meth.to_s =~ /^find_all_by_partial_(.+)$/
+        find_all_by_partial_attribute($1, *args)
+      elsif meth.to_s =~ /^find_by_partial_(.+)!$/
+        find_by_partial_attribute!($1, *args)
+      else
+        super
+      end
+    end
 
     # ToyStore supports adapters per model but this program needs an adapter per instance
     def self.with_adapter(branch, root)
