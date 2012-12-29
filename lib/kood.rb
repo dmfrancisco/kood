@@ -1,5 +1,6 @@
 require 'kood/adapter/git'
 require 'kood/adapter/grit'
+require 'kood/errors'
 require 'kood/version'
 
 module Kood

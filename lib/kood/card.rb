@@ -21,7 +21,7 @@ module Kood
     before_create { |card| card.list = list }
 
     def self.get!(id)
-      super rescue raise "The specified card does not exist."
+      super rescue raise NotFound, "The specified card does not exist."
     end
 
     def self.find_all_by_partial_attribute(attrs, search_param, options = {})
@@ -32,23 +32,32 @@ module Kood
       end.flatten
     end
 
+    # If the `unique` option is present, an exception must be raised if:
+    # - More than one exact match was found
+    # - Zero exact matches were found but more than one partial match was found
+    # If `unique` not present, return the first match giving preference to exact matches
+    #
     def self.find_by_partial_attribute!(attrs, search_param, options = {})
-      matches = find_all_by_partial_attribute(attrs, search_param, options)
-      raise "The specified card does not exist." if matches.empty?
+      must_unique = options[:unique] == true
 
-      # If `unique` is present, an exception must be raised if:
-      # - More than one exact match was found
-      # - Zero exact matches were found but more than one partial match was found
-      # If `unique` not present, return the first match giving preference to exact matches
+      # Find partial (and exact) matches
+      matches = find_all_by_partial_attribute(attrs, search_param, options)
+
+      # If nothing was found, raise an exception
+      raise NotFound, "The specified card does not exist." if matches.empty?
+
+      # Refine the search and retrieve only exact matches
       exact_matches = attrs.split('_or_').map do |a|
         matches.select { |c| c.attributes[a].casecmp(search_param).zero? }
       end.flatten
-      unique_exact_match = (options[:unique] == true and exact_matches.length == 1)
-      several_matches = (not options[:unique] and not exact_matches.empty?)
-      return exact_matches.first if unique_exact_match or several_matches
 
-      raise "Multiple cards match the given criteria." if matches.length > 1 and options[:unique]
-      matches.first
+      if (must_unique and exact_matches.length == 1) or (!must_unique and !exact_matches.empty?)
+        exact_matches.first
+      elsif matches.length > 1 and must_unique
+        raise MultipleDocumentsFound, "Multiple cards match the given criteria."
+      else
+        matches.first
+      end
     end
 
     def has_custom_attrs?

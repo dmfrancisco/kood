@@ -11,7 +11,7 @@ module Kood
     before_create :id_is_unique?
 
     def self.get!(id)
-      super rescue raise "The specified list does not exist."
+      super rescue raise NotFound, "The specified list does not exist."
     end
 
     private
@@ -30,7 +30,7 @@ module Kood
     end
 
     def id_is_unique?
-      raise "A list with this ID already exists." unless List.get(id).nil?
+      raise NotUnique, "A list with this ID already exists." unless List.get(id).nil?
     end
   end
 end

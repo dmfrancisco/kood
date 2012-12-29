@@ -30,7 +30,7 @@ module Kood
     end
 
     def self.get!(id)
-      super rescue raise "The specified board does not exist."
+      super rescue raise NotFound, "The specified board does not exist."
     end
 
     def self.current
@@ -38,7 +38,7 @@ module Kood
     end
 
     def self.current!
-      current or raise "No board has been selected yet."
+      current or raise Error, "No board has been selected yet."
     end
 
     def is_current?
@@ -129,7 +129,7 @@ module Kood
     end
 
     def id_is_unique?
-      raise "A board with this ID already exists." unless Board.get(id).nil?
+      raise NotUnique, "A board with this ID already exists." unless Board.get(id).nil?
     end
   end
 end
