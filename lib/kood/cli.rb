@@ -91,14 +91,6 @@ class Kood::CLI < Thor
     (options.keys - self.class.class_options.keys).empty?
   end
 
-  def set_color(text, *colors)
-    if options.key? 'no-color'
-      text
-    else
-      super
-    end
-  end
-
   def ok(text)
     # This idea comes from `git.io/logbook`, which is awesome. You should check it out.
     if options.key? 'no-color'
