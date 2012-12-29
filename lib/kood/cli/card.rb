@@ -49,41 +49,27 @@ class Kood::CLI < Thor
 
   private
 
-  def operate_on_card(current_board, card_id_or_title)
-    card_title = card_id = card_id_or_title
+  def operate_on_card(current_board, card_id_or_title, card_id = card_id_or_title)
     card = Kood::Card.find_by_partial_id_or_title!(card_id_or_title)
 
+    copy_card(card)       if options.copy.present?
+    delete_card(card_id)  if options.key? 'delete'
+    return edit(card_id)  if options.edit.present? # Execute the `edit` task
 
-    if options.key? 'copy'
-      # TODO
-    end # The copied card may be deleted or moved now
-
-    if options.key? 'move'
-      # TODO If the card was moved, it cannot be deleted
-
-    elsif options.key? 'delete'
-      delete_card(card_id)
-    end
-
-    if options.key? 'edit'
-      edit(card_id_or_title) # Execute the `edit` task
-      return # The editor was opened - the following actions should not be triggered
-    end
-
-    if options.keys.any? { |option| ['set', 'unset', 'add', 'remove'].include? option }
-      if options.key? 'set'
+    if options.any? { |k,v| %w{ set unset add remove }.include? k }
+      if options.set.present?
         set_card_attributes(card)
       end
 
-      if options.key? 'unset'
+      if options.unset.present?
         # TODO Example: kood card lorem --unset title description labels
       end
 
-      if options.key? 'add'
+      if options.add.present?
         # TODO Example: kood card lorem --add participants David Diogo -a labels bug
       end
 
-      if options.key? 'remove'
+      if options.remove.present?
         # TODO Example: kood card lorem --remove participants David
       end
 
@@ -100,6 +86,12 @@ class Kood::CLI < Thor
     list = Kood::List.get! options.list
     list.cards.create(title: card_title, list: list)
     ok "Card created."
+  end
+
+  def copy_card(card) # TODO Support card copy between boards
+    list = options.copy.eql?('copy') ? card.list : Kood::List.get!(options.copy)
+    list.cards.create(card.dup.attributes.except 'date', list: list)
+    ok "Card copied."
   end
 
   def delete_card(card_id_or_title)

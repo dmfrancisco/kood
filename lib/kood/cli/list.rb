@@ -44,11 +44,11 @@ class Kood::CLI < Thor
   def operate_on_list(current_board, list_id)
     list = Kood::List.get!(list_id)
 
-    if options.key? 'copy'
+    if options.copy.present?
       # TODO
     end # The copied list may be deleted or moved now
 
-    if options.key? 'move'
+    if options.move.present?
       # TODO
       # If the list was moved, it cannot be deleted
 

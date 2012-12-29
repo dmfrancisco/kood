@@ -139,6 +139,27 @@ describe Kood::CLI do
       out.must_include "Priority:     1"
       out.must_include "Hello world:  -0.42"
     end
+    it "copies to the same list on `card 'Sample card' --copy`" do
+      kood('card sample -l hello')
+      kood('card sample -c').must_equal "Card copied."
+      kood('card jambaz -l world')
+      kood('card').gsub("\n","").must_match /hello.*world.*sample.*jambaz.*sample/
+    end
+    it "copies to another list on `card 'Sample card' --copy list`" do
+      kood('card sample -l hello')
+      kood('card sample -c world').must_equal "Card copied."
+      kood('card jambaz -l world')
+      kood('card').gsub("\n","").must_match /hello.*world.*sample.*sample.*jambaz/
+    end
+    it "moves on `card <card-id> -cd`" do
+      kood('card sample -l hello')
+      old_id = kood('card sample').match(/\u2503 (.*) \(created/).captures[0]
+      out = kood('card')
+
+      kood("card #{ old_id } -cd").must_equal "Card copied.\nCard deleted."
+      new_id = kood('card sample').match(/\u2503 (.*) \(created/).captures[0]
+      kood('card').must_equal out.gsub(old_id.slice(0, 8), new_id.slice(0, 8))
+    end
     # TODO Test for utf-8 in card descriptions
   end
 

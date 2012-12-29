@@ -7,28 +7,39 @@ class Kood::CLI < Thor
   method_option :delete, :aliases => '-d', :type => :boolean
   #
   # Copy a board. <board-id> will be copied to <new-board-id>.
-  # <board-id> is kept intact and a new one is created with the exact same data.
+  # <board-id> will be kept intact and a new one is created with the exact same data.
   method_option :copy, :aliases => '-c', :type => :string
   #
   # Create a board in an external repository.
   method_option :repo, :aliases => '-r', :type => :string
   def board(board_id = nil)
-    # If no arguments and options are specified, the command displays all existing boards
+    # If no arguments and options are present, the command displays all existing boards
     if board_id.nil? and no_method_options?
       list_existing_boards
 
     # If the <board-id> argument is present without options, a new board will be created
-    elsif no_method_options? or options.key? 'repo'
+    elsif no_method_options? or options.repo.present?
       create_board(board_id)
 
-    # Since <board-id> is present, operate on the specified board
-    else
+    else # Since <board-id> is present, operate on the specified board
       operate_on_board(board_id)
     end
   end
   map 'boards' => 'board'
 
   private
+
+  def operate_on_board(board_id)
+    board = get_board_or_current!(board_id) # Raises exception if inexistent
+
+    if options.copy.present?
+      # TODO
+    end # The copied board may be deleted now, if the :delete option is present
+
+    if options.key? 'delete'
+      delete_board(board_id)
+    end
+  end
 
   def list_existing_boards
     return error "No boards were found." if Kood.config.boards.empty?
@@ -60,18 +71,6 @@ class Kood::CLI < Thor
 
   def get_board_or_current!(board_id)
     board_id.nil? ? Kood::Board.current! : Kood::Board.get!(board_id)
-  end
-
-  def operate_on_board(board_id)
-    board = get_board_or_current!(board_id) # Raises exception if inexistent
-
-    if options.key? 'copy'
-      # TODO
-    end # The copied board may be deleted now, if the :delete option is present
-
-    if options.key? 'delete'
-      delete_board(board_id)
-    end
   end
 
   def print_board(board)
