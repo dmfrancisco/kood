@@ -5,7 +5,7 @@ module Kood
     include Toy::Store
 
     # Associations
-    list :cards, Card
+    list :cards, Card, dependent: true
 
     # Observers
     before_create :id_is_unique?

@@ -40,7 +40,7 @@ module Kood
     adapter :git, Kood.repo, branch: 'config'
 
     # Associations
-    list :boards, Kood::Board
+    list :boards, Kood::Board, dependent: true
 
     # Attributes
     attribute :custom_repos,     Hash   # Support storing boards in external repos

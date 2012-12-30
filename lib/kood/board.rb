@@ -5,7 +5,7 @@ module Kood
     include Toy::Store
 
     # Associations
-    list :lists, List
+    list :lists, List, dependent: true
 
     # Attributes
     attribute :custom_repo, String, virtual: true
