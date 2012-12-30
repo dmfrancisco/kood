@@ -146,8 +146,8 @@ describe Kood::CLI do
       out.must_include "More:  example" # instead of modifying the default attributes
     end
     it "unsets attributes on `card sample --unset content:foo`" do
-      out = kood('c lorem -l hello -s content:ex foo:bar')
-      out = kood('c lorem --unset content foo').must_equal "Card updated."
+      kood('c lorem -l hello -s content:ex foo:bar')
+      kood('c lorem --unset content foo').must_equal "Card updated."
       kood('c lorem').wont_match /content.*foo/i
     end
     it "prevents the user from unsetting the 'title', 'list' and 'more' attributes" do
