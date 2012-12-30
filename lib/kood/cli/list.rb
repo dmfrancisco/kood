@@ -31,16 +31,6 @@ class Kood::CLI < Thor
 
   private
 
-  def list_existing_lists(current_board)
-    error "No lists were found." if current_board.lists.empty?
-    puts current_board.list_ids
-  end
-
-  def create_list(current_board, list_id)
-    current_board.lists.create(id: list_id)
-    ok "List created."
-  end
-
   def operate_on_list(current_board, list_id)
     list = Kood::List.get!(list_id)
 
@@ -53,9 +43,22 @@ class Kood::CLI < Thor
       # If the list was moved, it cannot be deleted
 
     elsif options.key? 'delete'
-      current_board.lists.destroy(list.id)
-      ok "List deleted."
+      delete_list(current_board, list_id)
     end
   end
 
+  def list_existing_lists(current_board)
+    error "No lists were found." if current_board.lists.empty?
+    puts current_board.list_ids
+  end
+
+  def create_list(current_board, list_id)
+    current_board.lists.create(id: list_id)
+    ok "List created."
+  end
+
+  def delete_list(current_board, list_id)
+    current_board.lists.destroy(list_id)
+    ok "List deleted."
+  end
 end

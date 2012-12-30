@@ -139,6 +139,21 @@ describe Kood::CLI do
       out.must_include "Priority:     1"
       out.must_include "Hello world:  -0.42"
     end
+    it "prevents the user from overriding the value of the 'list' and 'more' attributes" do
+      kood('c lorem -l hello --set list_id:world list:world more:example')
+      out = kood('card lorem')
+      out.must_include "List:  world"   # This means custom user attributes were set
+      out.must_include "More:  example" # instead of modifying the default attributes
+    end
+    it "unsets attributes on `card sample --unset content:foo`" do
+      out = kood('c lorem -l hello -s content:ex foo:bar')
+      out = kood('c lorem --unset content foo').must_equal "Card updated."
+      kood('c lorem').wont_match /content.*foo/i
+    end
+    it "prevents the user from unsetting the 'title', 'list' and 'more' attributes" do
+      out = kood('c lorem -l hello --unset title list list_id more')
+      out.must_equal("Card created.\nNo changes to persist.")
+    end
     it "copies to the same list on `card 'Sample card' --copy`" do
       kood('card sample -l hello')
       kood('card sample -c').must_equal "Card copied."
@@ -151,7 +166,7 @@ describe Kood::CLI do
       kood('card jambaz -l world')
       kood('card').gsub("\n","").must_match /hello.*world.*sample.*sample.*jambaz/
     end
-    it "moves on `card <card-id> -cd`" do
+    it "supports the combination of the copy and delete options" do
       kood('card sample -l hello')
       old_id = kood('card sample').match(/\u2503 (.*) \(created/).captures[0]
       out = kood('card')
@@ -172,11 +187,11 @@ describe Kood::CLI do
       set_env(KOOD_EDITOR: "", EDITOR: "")
       kood('edit hello').must_equal "To edit a card set $EDITOR or $KOOD_EDITOR."
     end
-    it "opens the gem with KOOD_EDITOR as highest priority" do
+    it "edits the card with KOOD_EDITOR as highest priority" do
       set_env(KOOD_EDITOR: "kood_editor", EDITOR: "editor")
       kood('edit hello').must_match /^Could not run `kood_editor cards\/.*\.md`\.$/
     end
-    it "opens the gem with EDITOR as 2nd highest priority" do
+    it "edits the card with EDITOR as 2nd highest priority" do
       set_env(KOOD_EDITOR: "", EDITOR: "editor")
       kood('edit hello').must_match /^Could not run `editor cards\/.*\.md`\.$/
     end
@@ -185,6 +200,11 @@ describe Kood::CLI do
       out = "The editor exited without changes. Run `kood update` to persist changes."
       kood('edit hello').must_equal out
       kood('card hello -e').must_equal out # Alias
+
+      # Just to make sure it actually opens the file. Since edit uses `system`, programs
+      # like `cat` will print to stdout and we can't capture the output here
+      set_env(KOOD_EDITOR: "ruby -e \"exit 1 unless File.read(ARGV[0]).include?('title')\"")
+      kood('edit hello').wont_match "Could not run"
     end
   end
 

@@ -1,3 +1,5 @@
+require 'active_support/core_ext/hash/except'
+
 class Kood::CLI < Thor
 
   desc "card [OPTIONS] [<CARD-ID|CARD-TITLE>]", "Display and manage cards"
@@ -57,21 +59,10 @@ class Kood::CLI < Thor
     return edit(card_id)  if options.edit.present? # Execute the `edit` task
 
     if options.any? { |k,v| %w{ set unset add remove }.include? k }
-      if options.set.present?
-        set_card_attributes(card)
-      end
-
-      if options.unset.present?
-        # TODO Example: kood card lorem --unset title description labels
-      end
-
-      if options.add.present?
-        # TODO Example: kood card lorem --add participants David Diogo -a labels bug
-      end
-
-      if options.remove.present?
-        # TODO Example: kood card lorem --remove participants David
-      end
+      set_card_attributes(card)    if options.set.present?
+      unset_card_attributes(card)  if options.unset.present?
+      add_card_attributes(card)    if options.add.present?
+      remove_card_attributes(card) if options.remove.present?
 
       if card.changed?
         card.save!
@@ -100,17 +91,48 @@ class Kood::CLI < Thor
     ok "Card deleted."
   end
 
+  # Iterates over all pairs of `options.set` and:
+  # - If a key is an attribute of card, sets its value
+  # - If a key is not an attribute of card, set it in the `more` hash, which is used to
+  #   store custom attributes defined by the user
+  #
+  # Example: kood card lorem --set title:lorem description:"lorem ipsum" foo:bar
+  #
   def set_card_attributes(card)
     options.set.each do |key, value|
       value = Kood::Shell.try_convert(value) # Convert to float or int if possible
 
-      if card.attributes.keys.include? key
+      if card.attributes.keys.include? key and not %w{ list list_id more }.include? key.to_s
         card.send("#{ key }=", value)
       else
         card.more ||= {}
-        card.more = card.more.merge({ key => value })
+        card.more = card.more.merge(key => value) # `merge!` doesn't update the `changes` hash
       end
     end
+  end
+
+  # It operates in the same way of the `set_card_attributes` method but iterates over
+  # the `options.unset` array, instead of an hash
+  #
+  # Example: kood card lorem --unset title description labels
+  #
+  def unset_card_attributes(card)
+    options.unset.each do |a|
+      if card.attributes.keys.include? a and not %w{ title list list_id more }.include? a.to_s
+        card.send("#{ a }=", nil)
+      else
+        card.more ||= {}
+        card.more = card.more.except(a) # `delete` doesn't update the `changes` hash
+      end
+    end
+  end
+
+  # TODO Example: kood card lorem --add participants David Diogo -a labels bug
+  def add_card_attributes(card)
+  end
+
+  # TODO Example: kood card lorem --remove participants David
+  def remove_card_attributes(card)
   end
 
   def print_card(board, card)
