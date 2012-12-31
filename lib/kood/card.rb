@@ -17,9 +17,6 @@ module Kood
     attribute :date,         Time, default: lambda { Time.now }
     attribute :more,         Hash # to store additional user-defined properties
 
-    # Observers
-    before_create { |card| card.list = list }
-
     def self.get!(id)
       super rescue raise NotFound, "The specified card does not exist."
     end
