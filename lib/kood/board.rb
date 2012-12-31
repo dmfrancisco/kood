@@ -90,6 +90,10 @@ module Kood
       adapter.client.remotes.any? { |b| b.name =~ /\/#{ id }$/ }
     end
 
+    def external?
+      Kood.config.custom_repos[id].present?
+    end
+
     def root
       Board.root(id)
     end

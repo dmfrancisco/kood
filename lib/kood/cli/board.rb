@@ -47,7 +47,9 @@ class Kood::CLI < Thor
     max_board_id = Kood.config.boards.max_by { |b| b.id.size }.id.size
     Kood.config.boards.each do |b|
       marker     = b.is_current? ? "* " : "  "
-      visibility = b.published?  ? "(shared)" : "(private)"
+      visibility = b.published?  ? "shared" : "private"
+      repo_path  = b.root.gsub(/^#{ ENV['HOME'] }/, "~") if b.external?
+      visibility = "(#{ visibility }#{ ' at '+ repo_path if b.external? })"
       visibility = set_color(visibility, :black, :bold) unless options.key? 'no-color'
       puts marker + b.id.to_s.ljust(max_board_id + 2) + visibility
     end

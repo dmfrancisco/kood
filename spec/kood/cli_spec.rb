@@ -43,7 +43,7 @@ describe Kood::CLI do
     end
     it "creates an external board on `board foo --repo`" do
       kood('board foo -r /tmp/example-git/').must_equal "Board created and selected."
-      kood('boards').must_equal "* foo  (private)"
+      kood('boards').must_equal "* foo  (private at /tmp/example-git/)"
     end
     # TODO Test the push, pull and sync commands
   end
