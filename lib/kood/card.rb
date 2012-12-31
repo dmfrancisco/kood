@@ -85,19 +85,17 @@ module Kood
       board = Board.current!
       changed = false
 
-      adapter.client.with_stash do
-        adapter.client.with_branch({}, board.id) do
-          Dir.chdir(board.root) do
-            yield filepath if block_given?
-          end
-
-          data = File.read(File.join(board.root, filepath))
-          self.attributes = Card.adapter.decode(data)
-          changed = self.changed?
-
-          save! if changed
-          adapter.client.git.reset(hard: true)
+      adapter.client.with_stash_and_branch(board.id) do
+        Dir.chdir(board.root) do
+          yield filepath if block_given?
         end
+
+        data = File.read(File.join(board.root, filepath))
+        self.attributes = Card.adapter.decode(data)
+        changed = self.changed?
+
+        save! if changed
+        adapter.client.git.reset(hard: true)
       end
       changed
     end

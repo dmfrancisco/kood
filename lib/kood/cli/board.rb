@@ -32,13 +32,8 @@ class Kood::CLI < Thor
   def operate_on_board(board_id)
     board = get_board_or_current!(board_id) # Raises exception if inexistent
 
-    if options.copy.present?
-      # TODO
-    end # The copied board may be deleted now, if the :delete option is present
-
-    if options.key? 'delete'
-      delete_board(board_id)
-    end
+    copy_board(board)      if options.copy.present?
+    delete_board(board_id) if options.key? 'delete'
   end
 
   def list_existing_boards
@@ -64,6 +59,9 @@ class Kood::CLI < Thor
     else
       ok "Board created."
     end
+  end
+
+  def copy_board(board)
   end
 
   def delete_board(board_id)

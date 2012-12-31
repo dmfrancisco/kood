@@ -24,6 +24,12 @@ module Grit
       checkout(options, current_branch) unless on_branch? current_branch
     end
 
+    def with_stash_and_branch(stash_options = {}, branch_options = {}, branch_name)
+      with_stash(stash_options) do
+        with_branch(branch_options, branch_name) { yield }
+      end
+    end
+
     def checkout(options = {}, branch_name)
       git.checkout(options, branch_name)
       raise "Failed to checkout #{ branch_name }." unless on_branch? branch_name

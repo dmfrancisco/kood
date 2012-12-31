@@ -5,7 +5,7 @@ module Kood
     include Toy::Store
 
     # Associations
-    list :lists, List, dependent: true
+    list :lists, List
 
     # Attributes
     attribute :custom_repo, String, virtual: true
@@ -46,14 +46,11 @@ module Kood
     end
 
     def delete
-      if is_current?
-        adapter.client.git.reset(hard: true)
-        adapter.client.git.checkout({}, 'master')
-        Kood.config.current_board_id = nil
-        Kood.config.save! unless Kood.config.changes.empty?
-      end
-      adapter.client.git.branch({ :D => true }, id)
-      # Since we deleted the branch, the default behavior is not necessary
+      client.with_stash do
+        client.git.checkout('master') if client.on_branch? id
+        Kood.config.unselect_board if is_current?
+        client.git.branch({ :D => true }, id)
+      end # Since we deleted the branch, the default behavior is not necessary
     end
 
     def cards
@@ -61,23 +58,18 @@ module Kood
     end
 
     def select
-      Kood.config.current_board_id = id
-      Kood.config.save! unless Kood.config.changes.empty?
+      Kood.config.select_board(id)
     end
 
     def pull(remote = 'origin')
-      adapter.client.with_stash do
-        adapter.client.with_branch({}, id) do
-          adapter.client.git.pull({ process_info: true }, remote, id)
-        end
+      client.with_stash_and_branch(id) do
+        client.git.pull({ process_info: true }, remote, id)
       end
     end
 
     def push(remote = 'origin')
-      adapter.client.with_stash do
-        adapter.client.with_branch({}, id) do
-          adapter.client.git.push({ process_info: true }, remote, id)
-        end
+      client.with_stash_and_branch(id) do
+        client.git.push({ process_info: true }, remote, id)
       end
     end
 
@@ -87,7 +79,7 @@ module Kood
     end
 
     def published?
-      adapter.client.remotes.any? { |b| b.name =~ /\/#{ id }$/ }
+      client.remotes.any? { |b| b.name =~ /\/#{ id }$/ }
     end
 
     def external?
@@ -130,6 +122,10 @@ module Kood
 
     def self.root(board_id)
       Kood.config.custom_repos[board_id] or Kood.root
+    end
+
+    def client
+      adapter.client
     end
 
     def id_is_unique?

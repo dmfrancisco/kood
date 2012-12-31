@@ -25,12 +25,20 @@ describe Kood::CLI do
       kood('boards').must_equal "* foo  (private)\n  bar  (private)"
     end
     it "deletes on `board foo --delete`" do
-      kood('board foo')
-      kood('board foo -d').must_equal "Board deleted."
+      kood('board foo', 'board bar')
+      kood('board bar -d').must_equal "Board deleted."
+
+      # Same result is excepted if the board has contents
+      kood('b bar', 'sw bar', 'l lorem', 'c ipsum -l lorem', 'b sw foo')
+      kood('board bar -d').must_equal "Board deleted."
     end
     it "deletes the current board on `board --delete`" do
       kood('board foo')
       kood('board --delete').must_equal "Board deleted."
+
+      # Same result is excepted if the board has contents
+      kood('b foo', 'l lorem', 'c ipsum -l lorem')
+      kood('board foo -d').must_equal "Board deleted."
     end
     it "complains to delete an inexistent board" do
       kood('board foo -d').must_equal "The specified board does not exist."

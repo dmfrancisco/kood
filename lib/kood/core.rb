@@ -40,7 +40,7 @@ module Kood
     adapter :git, Kood.repo, branch: 'config'
 
     # Associations
-    list :boards, Kood::Board, dependent: true
+    list :boards, Kood::Board
 
     # Attributes
     attribute :custom_repos,     Hash   # Support storing boards in external repos
@@ -49,6 +49,15 @@ module Kood
     # Only one instance of Config should be created
     def self.instance
       @@instance ||= get_or_create('config')
+    end
+
+    def select_board(board_id)
+      self.current_board_id = board_id
+      save! if changed?
+    end
+
+    def unselect_board
+      select_board nil
     end
   end
 
