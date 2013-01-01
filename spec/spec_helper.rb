@@ -22,7 +22,6 @@ end
 
 # Shortcut to execute thor commands and capture its output
 def kood(*cmds)
-  bin = File.expand_path('../../bin/kood', __FILE__)
   cmds.map! { |cmd| cmd += " --no-color" }
   stdout = stderr = []
 

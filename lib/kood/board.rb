@@ -78,6 +78,24 @@ module Kood
       exit_status.zero? ? push(remote) : [exit_status, out, err]
     end
 
+    # Returns a list of git users. It will search in other boards or in the rest of the
+    # git repository if this is an external board. The result also includes the users that
+    # already made commits to this board
+    def potential_members(options = { all_branches: true })
+      members = client.git.log(all: options[:all_branches], format: '%aN <%cE>').split("\n").uniq
+      members.map! { |m| m.force_encoding("UTF-8") }
+    end
+
+    def find_potential_member_by_partial_name_or_email(search_param)
+      # Find partial (and exact) matches
+      matches = potential_members.select { |u| u.match /#{ search_param }/i }
+      return matches.first if matches.length <= 1
+
+      # Refine the search and retrieve only exact matches
+      exact_matches = matches.select { |u| u.casecmp(search_param).zero? }
+      return exact_matches.length == 1 ? exact_matches.first : nil
+    end
+
     def published?
       client.remotes.any? { |b| b.name =~ /\/#{ id }$/ }
     end

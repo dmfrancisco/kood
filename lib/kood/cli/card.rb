@@ -61,8 +61,8 @@ class Kood::CLI < Thor
     if options.any? { |k,v| %w{ set unset add remove }.include? k }
       set_card_attributes(card)    if options.set.present?
       unset_card_attributes(card)  if options.unset.present?
-      add_card_attributes(card)    if options.add.present?
-      remove_card_attributes(card) if options.remove.present?
+      insert_into_card_array_attribute(current_board, card)  if options.add.present?
+      remove_from_card_array_attribute(current_board, card)  if options.remove.present?
 
       if card.changed?
         card.save!
@@ -102,12 +102,12 @@ class Kood::CLI < Thor
     options.set.each do |key, value|
       value = Kood::Shell.type_cast(value) # Convert to float or int if possible
 
-      if card.attributes.keys.include? key and not %w{ list list_id more }.include? key.to_s
-        card.send("#{ key }=", value)
+      if Kood::Card.attribute? key and not %w{ list list_id more }.include? key.to_s
+        card[key] = value
       else
         card.more ||= {}
-        card.more = card.more.merge(key => value) # `merge!` doesn't update the `changes` hash
-      end
+        card.more = card.more.merge(key => value) # Has to be "card.more=" to be consi-
+      end                                         # dered changed (merge! wouldn't work)
     end
   end
 
@@ -117,22 +117,53 @@ class Kood::CLI < Thor
   # Example: kood card lorem --unset title description labels
   #
   def unset_card_attributes(card)
-    options.unset.each do |a|
-      if card.attributes.keys.include? a and not %w{ title list list_id more }.include? a.to_s
-        card.send("#{ a }=", nil)
+    options.unset.each do |key|
+      if Kood::Card.attribute? key and not %w{ title list list_id more }.include? key
+        card[key] = nil
       else
         card.more ||= {}
-        card.more = card.more.except(a) # `delete` doesn't update the `changes` hash
+        card.more = card.more.except(key) # Has to be "card.more=" to be considered changed
+      end
+    end
+  end
+
+  def update_card_array_attribute(current_board, card, opt)
+    values = opt.eql?(:+) ? options.add : options.remove
+    key = values.shift
+
+    if key.eql? 'participants'
+      board_members = values.map do |v|
+        current_board.find_potential_member_by_partial_name_or_email(v) || v
+      end
+      # Since this command may be called by other users with distinct boards, the found
+      # board members may be different, so always keep the typed values if this is about
+      # removing participants
+      values = opt.eql?(:+) ? board_members : (values + board_members)
+    end
+
+    if Kood::Card.attribute? key and Kood::Card.attributes[key].type.eql? Array
+      card[key] ||= []
+      card[key] = opt.eql?(:+) ? (card[key] + values) : (card[key] - values)
+    else
+      begin
+        card.more ||= {}
+        card.more[key] ||= []
+        new_value = opt.eql?(:+) ? (card.more[key] + values) : (card.more[key] - values)
+        card.more = card.more.merge(key => new_value) # Has to be "card.more=" to be consi-
+      rescue TypeError, NoMethodError                 # dered changed (merge! wouldn't work)
+        raise Kood::TypeError, "Can't convert the attribute into a list."
       end
     end
   end
 
   # TODO Example: kood card lorem --add participants David Diogo -a labels bug
-  def add_card_attributes(card)
+  def insert_into_card_array_attribute(current_board, card)
+    update_card_array_attribute(current_board, card, :+)
   end
 
   # TODO Example: kood card lorem --remove participants David
-  def remove_card_attributes(card)
+  def remove_from_card_array_attribute(current_board, card)
+    update_card_array_attribute(current_board, card, :-)
   end
 
   def print_card(board, card)
@@ -142,9 +173,10 @@ class Kood::CLI < Thor
 
     table = Kood::Table.new(1, width)
     col = table.new_column
-    col.add_row(card.title, separator: (!card.content.empty? or card.has_custom_attrs?))
+    attribute_list = card.pretty_attributes
+    col.add_row(card.title, separator: (!card.content.empty? or attribute_list.empty?))
     col.add_row(card.content) unless card.content.empty?
-    col.add_row(card.pretty_attributes) if card.has_custom_attrs?
+    col.add_row(attribute_list) unless attribute_list.empty?
 
     opts = options.key?('no-color') ? {} : { color: [:black, :bold] }
     col.add_row("#{ card.id } (created at #{ card.date })", opts)

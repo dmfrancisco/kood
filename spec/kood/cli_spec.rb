@@ -162,6 +162,32 @@ describe Kood::CLI do
       out = kood('c lorem -l hello --unset title list list_id more')
       out.must_equal("Card created.\nNo changes to persist.")
     end
+    it "adds participants to a card on `card sample --add participants foo`" do
+      user_name  = `git config --get user.name `.chomp
+      user_email = `git config --get user.email`.chomp
+      kood("c lorem -l hello --add participants #{ user_name.split.first }")
+      kood('c lorem').must_include "Participants:  #{ user_name } <#{ user_email }>"
+    end
+    it "adds elements to custom array attributes" do
+      kood('c lorem -l hello --add foo one two three')
+      kood('c lorem').must_include "Foo:  one, two, three"
+    end
+    it "removes participants from a card on `c sample --remove participants foo`" do
+      first_name  = `git config --get user.name `.chomp.split.first
+      kood("c lorem -l hello -a participants #{ first_name } José")
+      kood("c lorem --remove participants #{ first_name }")
+      kood('c lorem').must_include "Participants:  José"
+      kood("c lorem --remove participants José")  # For now, for non-potential members it
+      kood('c lorem').wont_include "Participants" # needs to be an exact match
+    end
+    it "removes elements from custom array attributes" do
+      kood('c lorem -l hello --add foo one two three', 'c lorem -r foo one two')
+      kood('c lorem').must_include "Foo:  three"
+      kood("c lorem --remove foo three")
+      kood('c lorem').must_include "Foo:   " # This may change in the future
+      kood("c lorem --unset foo")
+      kood('c lorem').wont_include "Foo"
+    end
     it "copies to the same list on `card 'Sample card' --copy`" do
       kood('card sample -l hello')
       kood('card sample -c').must_equal "Card copied."

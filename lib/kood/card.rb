@@ -57,10 +57,6 @@ module Kood
       end
     end
 
-    def has_custom_attrs?
-      not self.more.blank?
-    end
-
     # FIXME With humanize "foo_id" becomes "Foo" instead of "Foo Id" which may be confusing
     def pretty_attributes(to_print = [ 'labels', 'participants', 'more' ])
       attrs = self.attributes.dup
