@@ -21,11 +21,11 @@ class Test < MiniTest::Unit::TestCase
   end
 
   def test_shell_argument_type_conversion
-    assert_equal    "foo",   Shell.try_convert("foo")
-    assert_equal    1,       Shell.try_convert("1")
-    assert_in_delta 1.0,     Shell.try_convert("1.0")
-    assert_equal    29,      Shell.try_convert("+0000029")
-    assert_in_delta -523.49, Shell.try_convert("-0523.49")
+    assert_equal    "foo",   Shell.type_cast("foo")
+    assert_equal    1,       Shell.type_cast("1")
+    assert_in_delta 1.0,     Shell.type_cast("1.0")
+    assert_equal    29,      Shell.type_cast("+0000029")
+    assert_in_delta -523.49, Shell.type_cast("-0523.49")
   end
 
   def test_card_pretty_attributes

@@ -100,7 +100,7 @@ class Kood::CLI < Thor
   #
   def set_card_attributes(card)
     options.set.each do |key, value|
-      value = Kood::Shell.try_convert(value) # Convert to float or int if possible
+      value = Kood::Shell.type_cast(value) # Convert to float or int if possible
 
       if card.attributes.keys.include? key and not %w{ list list_id more }.include? key.to_s
         card.send("#{ key }=", value)
