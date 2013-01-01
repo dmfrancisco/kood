@@ -99,7 +99,7 @@ module Kood
     # Returns an empty (full width) row
     def empty_row(options = { separator: true })
       vbar = options[:separator] ? self.vertical_bar : " "
-      "#{ vbar } #{ ' ' * @col_width } #{ vbar }"
+      @cols.map { |col| vbar + " #{ " "*@col_width } " }.join + vbar
     end
 
     # Returns an entire row from the table (which may cross several columns)
