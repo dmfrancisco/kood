@@ -14,7 +14,7 @@ class Kood::CLI < Thor
   namespace :kood
 
   class_option 'debug', :desc => "Run Kood in debug mode", :type => :boolean
-  class_option 'no-color', :desc => "Disable colorization in output", :type => :boolean
+  class_option 'color', :desc => "Colorization in output", :type => :boolean, :default => true
 
   check_unknown_options!
 
@@ -93,18 +93,18 @@ class Kood::CLI < Thor
 
   def ok(text)
     # This idea comes from `git.io/logbook`, which is awesome. You should check it out.
-    if options.key? 'no-color'
-      puts text
-    else
+    if options.color?
       say text, :green
+    else
+      puts text
     end
   end
 
   def error(text)
-    if options.key? 'no-color'
-      puts text
-    else
+    if options.color?
       say text, :red
+    else
+      puts text
     end
   end
 end

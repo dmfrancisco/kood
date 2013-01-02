@@ -45,7 +45,7 @@ class Kood::CLI < Thor
       visibility = b.published?  ? "shared" : "private"
       repo_path  = b.root.gsub(/^#{ ENV['HOME'] }/, "~") if b.external?
       visibility = "(#{ visibility }#{ ' at '+ repo_path if b.external? })"
-      visibility = set_color(visibility, :black, :bold) unless options.key? 'no-color'
+      visibility = set_color(visibility, :black, :bold) if options.color?
       puts marker + b.id.to_s.ljust(max_board_id + 2) + visibility
     end
   end
@@ -74,7 +74,7 @@ class Kood::CLI < Thor
   end
 
   def print_board(board)
-    opts = options.key?('no-color') ? {} : { color: [:black, :bold] }
+    opts = options.color? ? { color: [:black, :bold] } : {}
     num_lists = board.list_ids.size
     header = Kood::Table.new(num_lists)
     body   = Kood::Table.new(num_lists)
