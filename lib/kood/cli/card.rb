@@ -86,8 +86,9 @@ class Kood::CLI < Thor
   end
 
   def delete_card(card_id_or_title)
-    list = Kood::Card.find_by_partial_id_or_title!(card_id_or_title, unique: true).list
-    list.cards.destroy(card_id_or_title)
+    card = Kood::Card.find_by_partial_id_or_title!(card_id_or_title, unique: true)
+    list = card.list
+    list.cards.destroy(card.id)
     ok "Card deleted."
   end
 

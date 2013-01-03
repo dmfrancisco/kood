@@ -99,6 +99,7 @@ describe Kood::CLI do
     it "deletes on `card 'Sample card' --delete`" do
       kood('card "Sample card" -l hello')
       kood('card "Sample card" -d').must_equal "Card deleted."
+      kood('cards').wont_include "Sample card"
     end
     it "complains to delete an inexistent card" do
       kood('card none -d').must_equal "The specified card does not exist."
