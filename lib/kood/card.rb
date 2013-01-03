@@ -25,7 +25,10 @@ module Kood
       cards = options.key?(:list) ? options[:list].cards : Board.current!.cards
 
       attrs.split('_or_').map do |a|
-        cards.select { |c| c.attributes[a].match /#{ search_param }/i }
+        cards.select do |c|
+          # `search_param` may be a normal string or a string representing a regular expression
+          c[a].match /#{ search_param }/i or c[a].downcase.include?(search_param.downcase)
+        end
       end.flatten
     end
 
@@ -45,7 +48,7 @@ module Kood
 
       # Refine the search and retrieve only exact matches
       exact_matches = attrs.split('_or_').map do |a|
-        matches.select { |c| c.attributes[a].casecmp(search_param).zero? }
+        matches.select { |c| c[a].casecmp(search_param).zero? }
       end.flatten
 
       if (must_unique and exact_matches.length == 1) or (!must_unique and !exact_matches.empty?)

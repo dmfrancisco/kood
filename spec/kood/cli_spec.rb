@@ -118,12 +118,14 @@ describe Kood::CLI do
       kood('card "Sample card"').must_include "\u2503 Sample card"
     end
     it "displays information given partial title`" do
-      kood('card fo --list hello', 'card foo -l hello')
-      kood('card fo').must_include  "\u2503 fo"
-      kood('card foo').must_include "\u2503 foo"
-      kood('card f').must_include   "\u2503 fo"
-      kood('card Fo').must_include  "\u2503 fo" # Case-insentive comparison
-      kood('card F').must_include   "\u2503 fo"
+      kood('card fo --list hello', 'card foo -l hello', 'card lorem -l hello')
+      kood('card fo').must_include   "\u2503 fo"
+      kood('card foo').must_include  "\u2503 foo"
+      kood('card f').must_include    "\u2503 fo"
+      kood('card Fo').must_include   "\u2503 fo" # Case-insentive comparison
+      kood('card F').must_include    "\u2503 fo"
+      kood('card l.*e').must_include "\u2503 lorem"
+      kood('card z').must_include    "The specified card does not exist."
     end
     it "displays an empty board if any cards exist" do
       res = kood('cards')

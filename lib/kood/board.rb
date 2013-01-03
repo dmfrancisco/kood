@@ -88,7 +88,10 @@ module Kood
 
     def find_potential_member_by_partial_name_or_email(search_param)
       # Find partial (and exact) matches
-      matches = potential_members.select { |u| u.match /#{ search_param }/i }
+      matches = potential_members.select do |u|
+        # `search_param` may be a normal string or a string representing a regular expression
+        u.match /#{ search_param }/i or u.downcase.include?(search_param.downcase)
+      end
       return matches.first if matches.length <= 1
 
       # Refine the search and retrieve only exact matches
