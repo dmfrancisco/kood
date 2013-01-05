@@ -18,13 +18,9 @@ module Kood
       if @width
         sliced_rows = []
         row.split("\n").each do |row|
-          sliced = row.scan(/.{1,#{ @width }}/m)
-          sliced = [''] if sliced.empty?
-          sliced.map! { |s| s.send(options[:align], @width) }
-          sliced.map! { |s| s = set_color(s, *options[:color]) } if options.key? :color
-          sliced_rows += sliced
+          sliced_rows += self.slice_row(row, options)
         end
-        sliced_rows += [self.separator] if options[:separator]
+        sliced_rows << self.separator if options[:separator]
         self.add_rows(sliced_rows)
       else
         @rows.push(row)
@@ -37,6 +33,68 @@ module Kood
 
     def separator
       self.horizontal_bar * @width
+    end
+
+    protected
+
+    def slice_row(row, options = {})
+      sliced_rows = []
+      i = 0
+
+      while slice = row[i, @width]
+        break if slice.blank?
+        i += @width
+
+        # This slice may start with space(s). If it does, remove them, grab some extra
+        # characters and add them to the slice
+        i, slice = lstrip_row(i, slice, row)
+
+        # If this slice does not end with a space, and the first character of the next
+        # slice is not a space, it means we would be cutting a word in half. If this
+        # is not a big word move it to the next line
+        i, slice = hyphenize_row(i, slice, row)
+
+        slice = align_row(slice, options)
+        slice = colorize_row(slice, options) if options.key? :color
+
+        sliced_rows << slice
+      end
+      sliced_rows
+    end
+
+    def lstrip_row(i, slice, row)
+      slice = slice.lstrip
+      len_diff = @width - slice.length
+      if slice.length < @width and not row[i, len_diff].blank?
+        slice += row[i, len_diff]
+        i += len_diff
+      end
+      return i, slice
+    end
+
+    def hyphenize_row(i, slice, row)
+      if slice[-1] != ' ' and row[i] and row[i] != ' '
+        last_word = slice.split.last
+        len_diff = slice.length - last_word.length
+        if not last_word.blank? and last_word.length <= (@width * 0.25).floor
+          unless slice[0, len_diff].blank?
+            slice = slice[0, len_diff]
+            i -= last_word.length
+          end
+        elsif not last_word.blank? # Cut the word and add an hyphen
+          slice = slice[0..-2] +"-"
+          i -= 1
+        end
+      end
+      return i, slice
+    end
+
+    def align_row(slice, options = {})
+      slice.send(options[:align], @width)
+    end
+
+    def colorize_row(slice, options = {})
+      options.key?(:color) ? set_color(slice, *options[:color]) : slice
     end
   end
 
