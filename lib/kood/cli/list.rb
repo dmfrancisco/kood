@@ -53,8 +53,14 @@ class Kood::CLI < Thor
   end
 
   def create_list(current_board, list_id)
-    current_board.lists.create(id: list_id)
-    ok "List created."
+    list = current_board.lists.create(id: list_id)
+
+    if list.persisted?
+      ok "List created."
+    else
+      msgs = list.errors.full_messages.join("\n")
+      error "#{ msgs }."
+    end
   end
 
   def delete_list(current_board, list_id)

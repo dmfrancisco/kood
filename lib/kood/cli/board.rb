@@ -53,6 +53,11 @@ class Kood::CLI < Thor
   def create_board(board_id)
     board = Kood.config.boards.create(id: board_id, custom_repo: options['repo'])
 
+    unless board.persisted?
+      msgs = board.errors.full_messages.join("\n")
+      return error "#{ msgs.gsub('Id', 'Board ID') }."
+    end
+
     if Kood.config.boards.size == 1
       board.select
       ok "Board created and selected."
