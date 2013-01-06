@@ -85,21 +85,23 @@ class Kood::CLI < Thor
     body   = Kood::Table.new(num_lists)
 
     board.lists.each do |list|
-      header.new_column.add_row(list.id, align: 'center')
+      header.new_column.add_row(list.id, align: 'center', separator: false)
 
       column = body.new_column
       list.cards.each do |card|
+        colored_separator = set_color(column.separator, :green, :bold) # EXAMPLE
+        column.add_row(colored_separator, slice: false)
         column.add_row(card.title, separator: false)
-        column.add_row(card.id.slice(0, 8), opts)
+        column.add_row(card.id.slice(0, 8), opts.merge(separator: false))
       end
+      column.add_row(column.separator, slice: false)
     end
 
     title = Kood::Table.new(1, body.width)
     title.new_column.add_row(board.id, align: 'center')
 
     out = [ title.to_s(separator: false) ]
-    out << header.separator('first') << header
-    out << body.separator('middle') << body << body.separator('last')
+    out << header.separator('first') << header << body << body.separator('last')
 
     # `join` is used to prevent partial content from being printed if an exception occurs
     puts out.join("\n")

@@ -12,10 +12,10 @@ module Kood
     end
 
     def add_row(row, options = {})
-      options = { separator: true, align: 'ljust' }.merge(options)
+      options = { separator: true, align: 'ljust', slice: true }.merge(options)
       row = row.to_s.force_encoding("UTF-8")
 
-      if @width
+      if @width and options[:slice]
         sliced_rows = []
         row.split("\n").each do |row|
           sliced_rows += self.slice_row(row, options)
@@ -171,9 +171,14 @@ module Kood
     # For example,        |--|--| becomes |--+--|
     #                        |               |
     def improve_cell_corners(table_str)
-      table_str = table_str.gsub("\u2501 \u2503 \u2501", "\u2501\u2501\u254B\u2501\u2501")
-      table_str = table_str.gsub("\u2501 \u2503", "\u2501\u2501\u252B")
-      table_str.gsub("\u2503 \u2501", "\u2523\u2501\u2501")
+      # The ([\e\[\d*m]*) groups are meant to handle colored horizontal bars. This does
+      # not take into account vertical colored bars and assumes the color code is
+      # positioned before the first horizontal bar or after the last one.
+      str = table_str.dup.gsub(/\u2501([\e\[\d*m]*) \u2503 ([\e\[\d*m]*)\u2501/) do
+        "\u2501#{ $1 }\u2501\u254B\u2501#{ $2 }\u2501"
+      end
+      str.gsub!(/\u2501([\e\[\d*m]*) \u2503/) { "\u2501#{ $1 }\u2501\u252B" }
+      str.gsub(/\u2503 ([\e\[\d*m]*)\u2501/)  { "\u2523\u2501#{ $1 }\u2501" }
     end
   end
 end
