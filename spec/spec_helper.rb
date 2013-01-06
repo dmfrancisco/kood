@@ -14,6 +14,16 @@ class Kood::Config
   end
 end
 
+module Adapter
+  module UserConfigFile
+    def self.clear_conf
+      config_file = Kood::KOOD_ROOT.join(Kood.config_path)
+      File.delete(config_file) if File.exist?(config_file)
+      @@conf = nil
+    end
+  end
+end
+
 def set_env(vars)
   vars.each_pair do |key, value|
     ENV[key.to_s] = value

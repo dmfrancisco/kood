@@ -6,6 +6,7 @@ describe Kood::CLI do
     %w{ refs/heads HEAD }.each { |f| Kood.repo.git.fs_delete(f) }
     Kood.clear_repo # Force kood to create the master branch again
     Kood::Config.clear_instance
+    Adapter::UserConfigFile.clear_conf
   end
 
   describe "kood board" do

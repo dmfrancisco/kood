@@ -22,4 +22,5 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "thor",          "~> 0.16.0"
   gem.add_runtime_dependency "adapter-git",   "~> 0.5.0"
   gem.add_runtime_dependency "toystore",      "~> 0.10.4"
+  gem.add_runtime_dependency "user_config"
 end

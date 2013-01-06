@@ -4,7 +4,8 @@ module Kood
   extend self
 
   # Path to where data, such as user configurations and boards, is stored
-  KOOD_ROOT = Pathname(File.expand_path("~/.kood")) # TODO Replace with user conf
+  KOOD_PATH = ".kood"
+  KOOD_ROOT = Pathname(File.expand_path("~")).join(KOOD_PATH)
 
   def test?
     ENV['RACK_ENV'] == 'test'
@@ -13,6 +14,11 @@ module Kood
   # Default path to the repository where boards are stored
   def root
     @root ||= test? ? KOOD_ROOT.join('storage-test').to_s : KOOD_ROOT.join('storage').to_s
+  end
+
+  # File where configurations are stored
+  def config_path
+    test? ? "config-test.yml" : "config.yml"
   end
 
   # Init a repo (and create master branch since some git commands rely on its existence)
@@ -37,7 +43,7 @@ module Kood
   class Config
     include Toy::Store
 
-    adapter :git, Kood.repo, branch: 'config'
+    adapter :user_config, {}
 
     # Associations
     list :boards, Kood::Board
