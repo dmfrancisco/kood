@@ -42,7 +42,7 @@ module Kood
       i = 0
 
       while slice = row[i, @width]
-        break if slice.blank?
+        break if slice.blank? and !row.blank?
         i += @width
 
         # This slice may start with space(s). If it does, remove them, grab some extra
