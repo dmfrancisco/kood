@@ -11,7 +11,7 @@ module Kood
     attribute :custom_repo, String, virtual: true
 
     # Validations
-    validates_format_of :id, :with => /^[A-Za-z\d_]+$/
+    validates_format_of :id, :with => /^[A-Za-z\d_\-]+$/
 
     # Observers
     before_create :id_is_unique?

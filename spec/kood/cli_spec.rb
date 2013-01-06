@@ -21,6 +21,11 @@ describe Kood::CLI do
       kood('board foo')
       kood('board foo').must_equal "A board with this ID already exists."
     end
+    it "complains if an invalid character is used in the board ID" do
+      kood('board foo:').must_equal      "Board ID is invalid."
+      kood('board "foo bar"').must_equal "Board ID is invalid."
+      kood('board foo@bar').must_equal   "Board ID is invalid."
+    end
     it "displays a list on `boards`" do
       kood('board foo', 'board bar')
       kood('boards').must_equal "* foo  (private)\n  bar  (private)"
