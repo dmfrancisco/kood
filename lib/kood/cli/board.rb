@@ -89,9 +89,16 @@ class Kood::CLI < Thor
 
       column = body.new_column
       list.cards.each do |card|
-        colored_separator = set_color(column.separator, :green, :bold) # EXAMPLE
-        column.add_row(colored_separator, slice: false)
-        column.add_row(card.title, separator: false)
+        card_info = card.title
+        if options.color?
+          colored_separator = color_separator_with_labels(column.separator, card.labels)
+          column.add_row(colored_separator, slice: false)
+        else
+          labels = card.labels.uniq.map { |l| "##{ l }" }.join(", ")
+          card_info += " #{ labels }" unless labels.blank?
+          column.add_row(column.separator, separator: false)
+        end
+        column.add_row(card_info, separator: false)
         column.add_row(card.id.slice(0, 8), opts.merge(separator: false))
       end
       column.add_row(column.separator, slice: false)
@@ -105,5 +112,23 @@ class Kood::CLI < Thor
 
     # `join` is used to prevent partial content from being printed if an exception occurs
     puts out.join("\n")
+  end
+
+  def color_separator_with_labels(separator, labels)
+    return separator if labels.blank? or not options.color?
+
+    hbar = Kood::Shell.horizontal_bar
+    colored_bars = labels.map { |l| set_color(hbar * 3, label_to_color(l)) }.uniq
+
+    if colored_bars.length * 3 > separator.length
+      colored_bars = colored_bars[0...separator.length/3-1]
+      colored_bars << set_color(hbar * 3, :black, :bold)
+    end
+
+    separator[0...-colored_bars.length*3] + colored_bars.join
+  end
+
+  def label_to_color(label)
+    (Kood.config.labels[label] || 'blue').to_sym
   end
 end

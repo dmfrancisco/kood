@@ -24,6 +24,18 @@ module Adapter
   end
 end
 
+module Kood
+  module Shell
+    def set_terminal_size(width = 1024, height = 768)
+      @@size = [width, height]
+    end
+
+    def terminal_size
+      @@size || [1024, 768]
+    end
+  end
+end
+
 def set_env(vars)
   vars.each_pair do |key, value|
     ENV[key.to_s] = value
@@ -31,8 +43,7 @@ def set_env(vars)
 end
 
 # Shortcut to execute thor commands and capture its output
-def kood(*cmds)
-  cmds.map! { |cmd| cmd += " --no-color" }
+def kood_colored(*cmds)
   stdout = stderr = []
 
   # If only one command was passed, return stdout if successful or stderr otherwise
@@ -48,4 +59,9 @@ def kood(*cmds)
     stderr << err
   end
   return stdout, stderr
+end
+
+def kood(*cmds)
+  cmds.map! { |cmd| cmd += " --no-color" }
+  kood_colored(*cmds)
 end

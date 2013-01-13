@@ -6,6 +6,7 @@ describe Kood::CLI do
     %w{ refs/heads HEAD }.each { |f| Kood.repo.git.fs_delete(f) }
     Kood.clear_repo # Force kood to create the master branch again
     Kood::Config.clear_instance
+    Kood::Shell.set_terminal_size
     Adapter::UserConfigFile.clear_conf
   end
 
@@ -217,6 +218,22 @@ describe Kood::CLI do
       kood("card #{ old_id } -cd").must_equal "Card copied.\nCard deleted."
       new_id = kood('card sample').match(/\u2503 (.*) \(created/).captures[0]
       kood('card').must_equal out.gsub(old_id.slice(0, 8), new_id.slice(0, 8))
+    end
+    it "also displays labels on `cards`" do
+      # Without colors
+      kood('c sample -l hello --add labels bug docs user-story tech-story foo bar')
+      kood('c').must_include "sample #bug, #docs, #user-story, #tech-story, #foo, #bar"
+
+      # With colors
+      colors = [31, 36, 35, 32, 34] # red, cyan, magenta, green, blue
+      colors.map! { |c| "\e[#{ c }m#{ "\u2501"*3 }\e[0m" }
+      kood_colored('cards').must_include ["\u2501", colors, "\u2501\u254B"].join
+
+      # When there isn't enough space for all labels, a grey label is added
+      Kood::Shell.set_terminal_size(30)
+      colors = [31, 36].map! { |c| "\e[#{ c }m#{ "\u2501"*3 }\e[0m" }
+      more_labels = "\e[30m\e[1m#{ "\u2501"*3 }\e[0m"
+      kood_colored('c').must_include ["\u2501", colors, more_labels, "\u2501\u254B"].join
     end
     # TODO Test for utf-8 in card descriptions
   end

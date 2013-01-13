@@ -39,6 +39,15 @@ module Kood
     end
   end
 
+  def default_labels
+    labels = { 'user-story' => 'magenta', 'tech-story' => 'green' }
+    %w{ bug issue }.each { |k| labels[k] = 'red' }
+    %w{ improvement enhancement }.each { |k| labels[k] = 'yellow' }
+    %w{ documentation docs }.each { |k| labels[k] = 'cyan' }
+    labels['other'] = 'blue'
+    return labels
+  end
+
   # Live configurations that need to be saved
   class Config
     include Toy::Store
@@ -51,6 +60,7 @@ module Kood
     # Attributes
     attribute :custom_repos,     Hash   # Support storing boards in external repos
     attribute :current_board_id, String # Can be stored externally, so checkout isn't enough
+    attribute :labels,           Hash,  default: Kood.default_labels
 
     # Only one instance of Config should be created
     def self.instance
