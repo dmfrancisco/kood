@@ -7,6 +7,7 @@ class Kood::CLI < Thor
   def self.load_plugins
     program = File.basename $PROGRAM_NAME
     command = ARGV.first
+    command = ARGV[1] if command.eql? 'help' and ARGV.length > 1 # Help command
 
     if program.eql? 'kood' # File is being imported from the bin and not from the test suite
       unless command.nil? or Kood::CLI.method_defined? command # Check if command is unknown
