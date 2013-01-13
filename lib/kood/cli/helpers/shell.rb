@@ -71,6 +71,11 @@ module Kood
       "\u2501" != 'u2501'
     end
 
+    # Check if terminal supports colors. Condition stolen from Thor.
+    def color_support?
+      !(RbConfig::CONFIG['host_os'] =~ /mswin|mingw/) || ENV['ANSICON']
+    end
+
     # Horizontal delimiter for box drawing
     def horizontal_bar
       unicode? ? "\u2501" : '-'

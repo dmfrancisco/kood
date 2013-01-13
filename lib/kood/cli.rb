@@ -13,7 +13,8 @@ class Kood::CLI < Thor
   namespace :kood
 
   class_option 'debug', :desc => "Run Kood in debug mode", :type => :boolean
-  class_option 'color', :desc => "Colorization in output", :type => :boolean, :default => true
+  class_option 'color', :desc => "Colorization in output", :type => :boolean,
+    :default => Kood::Shell.color_support?
 
   check_unknown_options!
 
