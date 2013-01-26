@@ -1,6 +1,6 @@
 require 'kood/adapter/git'
-require 'kood/adapter/grit'
 require 'kood/adapter/user_config'
+require 'kood/extensions/grit'
 require 'kood/errors'
 require 'kood/version'
 
