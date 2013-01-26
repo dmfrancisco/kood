@@ -52,6 +52,7 @@ module Kood
       client.with_stash do
         client.git.checkout('master') if client.on_branch? id
         Kood.config.unselect_board if is_current?
+        Kood.config.custom_repos.delete(id)
         client.git.branch({ :D => true }, id)
       end # Since we deleted the branch, the default behavior is not necessary
     end
