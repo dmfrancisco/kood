@@ -1,6 +1,9 @@
 require 'user_config'
 
 module Adapter
+  # Simple adapter that uses the `user_config` gem to
+  # persist data into a YAML configuration file.
+  #
   module UserConfigFile
     def read(key, options = nil)
       config[key]

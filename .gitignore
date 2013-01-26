@@ -44,3 +44,4 @@ build/config/buildinfo.properties
 .rvmrc
 Gemfile.lock
 pkg/*
+.yardoc

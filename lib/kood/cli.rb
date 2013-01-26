@@ -92,7 +92,7 @@ class Kood::CLI < Thor
   end
 
   def ok(text)
-    # This idea comes from `git.io/logbook`, which is awesome. You should check it out.
+    # An idea from [git.io/logbook](//git.io/logbook). You should check it out.
     if options.color?
       say text, :green
     else

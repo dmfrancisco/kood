@@ -11,6 +11,15 @@ module Kood
       @rows = []
     end
 
+    # Add a new row to this column
+    # @param [String] row All contents to be added to the row of the column. It may be
+    #   split in several lines.
+    # @param [Hash] options The `:separator` option adds a horizontal line to the end of
+    #   the row. The `:align` option is used for text alignment; acceptable values are
+    #   `ljust`, `lright` and `center`. The `:slice` option slices the given `row`
+    #   parameter in order to fit in the column width. The following keys with default
+    #   values will be added if not present: `{ separator: true, align: 'ljust',
+    #   slice: true }`
     def add_row(row, options = {})
       options = { separator: true, align: 'ljust', slice: true }.merge(options)
       row = row.to_s.force_encoding("UTF-8")
@@ -27,15 +36,17 @@ module Kood
       end
     end
 
-    def add_rows(rows)
-      @rows.push(*rows)
-    end
-
+    # A sequence of dashes with the same width of the column
+    # @return [String]
     def separator
       self.horizontal_bar * @width
     end
 
     protected
+
+    def add_rows(rows)
+      @rows.push(*rows)
+    end
 
     def slice_row(row, options = {})
       sliced_rows = []
@@ -132,7 +143,7 @@ module Kood
       improve_cell_corners(output)
     end
 
-    # This code comes from `git.io/command_line_reporter`.
+    # This code comes from [git.io/command_line_reporter](//git.io/command_line_reporter).
     # A special Thank You to the authors.
     def separator(type = 'middle')
       if unicode?
