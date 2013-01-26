@@ -62,4 +62,4 @@ Vestibulum id ligula porta felis euismod semper:
 
 ## SEE ALSO
 
-kood-board(1), kood-status(1)
+kood-card(1), kood-status(1)

@@ -1,0 +1,52 @@
+kood-card(1) -- sample help page
+================================
+
+## SYNOPSIS
+
+A brief synopsis of how to invoke your app on the command line. This should be similar to
+what the default banner is in OptionParser or what is output by GLI after the “Usage:” bit.
+
+## DESCRIPTION
+
+A longer description of what your app does, why the user might use it, and any additional
+details. This section should be targeted at new users and written to help them understand
+how to use your app.
+
+## OPTIONS
+
+A bullet list documenting each option. This is a chance to explain in more detail how the
+options work and what effect they have on your app’s behavior.
+
+## EXAMPLES
+
+One or more examples of using the app, including brief text explaining each example.
+
+## FILES
+
+A list of files on the filesystem that the app uses (for example, todo would document the
+default to-do list file’s location here).
+
+## ENVIRONMENT
+
+A bullet list of any environment variables that affect the app’s behavior.
+
+## BUGS
+
+Known bugs or odd behaviors.
+
+## LICENSE
+
+The name of the license and a reference to the full license text (you do not need to
+reproduce the entire license here).
+
+## AUTHOR
+
+The authors of your app and their email addresses.
+
+## COPYRIGHT
+
+The copyright information for your app.
+
+## SEE ALSO
+
+Links to other commands or places on the Web that are relevant for your app.
