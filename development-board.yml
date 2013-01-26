@@ -4,3 +4,4 @@ list_ids:
 - backlog
 - in-progress
 - done
+- canceled
