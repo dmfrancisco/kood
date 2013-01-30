@@ -85,8 +85,10 @@ class Kood::CLI < Thor
     body   = Kood::Table.new(num_lists)
 
     board.lists.each do |list|
+      # Setup the header of the table
       header.new_column.add_row(list.id, align: 'center', separator: false)
 
+      # Setup the body of the table
       column = body.new_column
       list.cards.each do |card|
         card_info = card.title
@@ -104,11 +106,14 @@ class Kood::CLI < Thor
       column.add_row(column.separator, slice: false)
     end
 
+    # Setup the title of the table
     title = Kood::Table.new(1, body.width)
     title.new_column.add_row(board.id, align: 'center')
 
     out = [ title.to_s(separator: false) ]
-    out << header.separator('first') << header << body << body.separator('last')
+    out << header.separator('first') << header
+    out << body unless body.to_s.empty?
+    out << body.separator('last')
 
     # `join` is used to prevent partial content from being printed if an exception occurs
     puts out.join("\n")
