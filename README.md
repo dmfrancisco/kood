@@ -8,4 +8,4 @@ At least for now, this is a **pet project not intended for real use**, so expect
 
 [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/dmfrancisco/kood)
 
-![Work smarter](//raw.github.com/dmfrancisco/kood/media/promo.gif "Kood Promo")
+![Work smarter](https://raw.github.com/dmfrancisco/kood/media/promo.gif "Kood Promo")
