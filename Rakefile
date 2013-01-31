@@ -39,4 +39,4 @@ task :uninstall do
   puts `gem uninstall -x kood` # -x flag uninstalls executables too without confirmation
 end
 
-task :default => :test
+task :default => 'test:spec'
