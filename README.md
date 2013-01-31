@@ -6,4 +6,6 @@ The idea was to use Git as a database and take advantage of some of its features
 
 At least for now, this is a **pet project not intended for real use**, so expect some things to be broken. Nevertheless, more information will be added here in the future.
 
+[![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/dmfrancisco/kood)
+
 ![Work smarter](//raw.github.com/dmfrancisco/kood/media/promo.gif "Kood Promo")
