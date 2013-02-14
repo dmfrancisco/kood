@@ -1,4 +1,3 @@
-
 # k▥
 
 Kood is a command-line tool for task boards. It's collaborative and works offline. All data and settings are stored in text files. The application uses Git to handle conflicts and keep track of changes.
@@ -7,6 +6,6 @@ The idea was to use Git as a database and take advantage of some of its features
 At least for now, this is a **pet project not intended for real use**, so expect some things to be broken. Nevertheless, more information will be added here in the future.
 
 [![Dependency Status](https://gemnasium.com/dmfrancisco/kood.png)](https://gemnasium.com/dmfrancisco/kood)
-[![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/dmfrancisco/kood)
+[![Code Climate](https://codeclimate.com/github/dmfrancisco/kood.png)](https://codeclimate.com/github/dmfrancisco/kood)
 
 ![Work smarter](https://raw.github.com/dmfrancisco/kood/media/promo.gif "Kood Promo")
